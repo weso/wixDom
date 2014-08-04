@@ -20,3 +20,6 @@ var/
 
 # Sphinx documentation
 docs/_build/
+
+# Compiled
+*.pyc
