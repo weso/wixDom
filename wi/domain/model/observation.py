@@ -248,11 +248,6 @@ def _(event, obj=None):
 @_when.register(Observation.Discarded)
 def _(event, obs):
     obs.validate_event_originator(event)
-
-    for column in obs._columns:
-        column._discarded = True
-    obs._columns.clear()
-
     obs._discarded = True
     obs.increment_version()
     return obs
@@ -261,7 +256,7 @@ def _(event, obs):
 # Repository
 
 
-class ObservationRepository(object):
+class Repository(object):
     """
     Abstract implementation of generic queries for managing observations.
     This will be sub-classed with an infrastructure specific implementation
@@ -270,7 +265,7 @@ class ObservationRepository(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, **kwargs):
-        super(ObservationRepository, self).__init__(**kwargs)
+        super(Repository, self).__init__(**kwargs)
 
     def all_observations(self, obs_ids=None):
         return self.observations_where(lambda obs: True, obs_ids)
