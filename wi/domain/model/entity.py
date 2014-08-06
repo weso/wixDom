@@ -30,7 +30,7 @@ class Entity(object):
         self._version = version
         self._discarded = False
 
-    def _increment_version(self):
+    def increment_version(self):
         self._version += 1
 
     @property
@@ -45,7 +45,7 @@ class Entity(object):
         self._check_not_discarded()
         return self._version
 
-    def _validate_event_originator(self, event):
+    def validate_event_originator(self, event):
         if event.originator_id != self.id:
             raise ConsistencyError("Event originator id mismatch: {} != {}".
                                    format(event.originator_id, self.id))

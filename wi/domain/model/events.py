@@ -4,7 +4,7 @@ from utility.time import utc_now
 _now = object()
 
 
-class DomainEvent:
+class DomainEvent(object):
     """A base class for all events in this domain.
 
     DomainEvents are value objects and all attributes are specified as keyword
