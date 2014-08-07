@@ -6,6 +6,7 @@ import uuid
 from singledispatch import singledispatch
 from wi.domain.model.events import DomainEvent
 from wi.domain.model.events import publish
+from wi.domain.exceptions import ConstraintError
 
 # =======================================================================================
 # Observation aggregate root entity
@@ -19,6 +20,9 @@ class Observation(Entity):
         pass
 
     class Discarded(Entity.Discarded):
+        pass
+
+    class ReferencedIndicator(DomainEvent):
         pass
 
     def __init__(self, event):
@@ -194,11 +198,11 @@ class Observation(Entity):
     @ref_year.setter
     def ref_year(self, value):
         self._check_not_discarded()
-        if len(value) < 1:
-            raise ValueError("Observation's year cannot be empty")
         self._ref_year = value
         self.increment_version()
 
+    def _apply(self, event):
+        mutate(self, event)
 # =======================================================================================
 # Related Entities and value objects
 
@@ -252,6 +256,7 @@ def _(event, obs):
     obs.increment_version()
     return obs
 
+
 # =======================================================================================
 # Repository
 
@@ -289,3 +294,8 @@ class Repository(object):
 
 # =======================================================================================
 # Exceptions
+
+
+class DiscardedEntityError(Exception):
+    """Raised when an attempt is made to use a discarded Entity."""
+    pass
