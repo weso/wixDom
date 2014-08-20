@@ -1,6 +1,6 @@
 __author__ = 'guillermo'
 
-from wi.domain.model.observation import create_observation
+from wi.domain.model.observation.factories import create_observation
 
 
 def main():
@@ -10,8 +10,11 @@ def main():
                              label='Observation of Spain', publisher="WebFoundation",
                              obs_type="Observation", status='Some Status', value=12.1)
     obs_id = obs.id
+    print obs.version
     obs.ref_area = 'France'
     obs.ref_year = 2000
+    print obs.version
+
     return obs
 
 

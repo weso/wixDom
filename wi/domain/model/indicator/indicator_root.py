@@ -42,7 +42,7 @@ class Indicator(Entity):
                "republish={republish!r}, component={component!r}, " \
                "high_low={high_low!r}, ind_type={ind_type!r}, label={label!r}, " \
                "comment={comment!r}, notation={notation!r}" \
-               "interval_starts={interval_starts!r}, interval_ends={interval_ends!r}, ".\
+               "interval_starts={interval_starts!r}, interval_ends={interval_ends!r}) ".\
                format(d="*Discarded* " if self._discarded else "", id=self._id,
                       country_coverage=self._country_coverage,
                       provider_link=self._provider_link, republish=self._republish,

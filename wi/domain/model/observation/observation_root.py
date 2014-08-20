@@ -1,11 +1,8 @@
 __author__ = 'guillermo'
 
 from wi.domain.model.entity import Entity
-from abc import ABCMeta, abstractmethod
-import uuid
 from singledispatch import singledispatch
 from wi.domain.model.events import DomainEvent
-from wi.domain.model.events import publish
 from wi.domain.exceptions import ConstraintError
 
 # =======================================================================================
@@ -44,8 +41,8 @@ class Observation(Entity):
                "computation={computation!r}, issued={issued!r}, " \
                "publisher={publisher!r}, data_set={data_set!r}, " \
                "type={obs_type!r}, label={label!r}, status={status!r}, " \
-               "ref_indicator={ref_indicator!r}, value={value!r}" \
-               "ref_area={ref_area!r}, ref_year={ref_year!r}, ".\
+               "ref_indicator={ref_indicator!r}, value={value!r}, " \
+               "ref_area={ref_area!r}, ref_year={ref_year!r}) ".\
                format(d="*Discarded* " if self._discarded else "", id=self._id,
                       computation=self._computation, issued=self._issued,
                       publisher=self._publisher, data_set=self._data_set,
@@ -203,45 +200,26 @@ class Observation(Entity):
 
     def _apply(self, event):
         mutate(self, event)
-# =======================================================================================
-# Related Entities and value objects
-
-
-# =======================================================================================
-# Factories - Aggregate root factory
-
-def create_observation(issued, publisher, data_set, obs_type, label, status,
-                       ref_indicator, computation, value, ref_area, ref_year):
-    obs_id = uuid.uuid4().hex
-    event = Observation.Created(originator_id=obs_id, originator_version=0, issued=issued,
-                                publisher=publisher, data_set=data_set, obs_type=obs_type,
-                                label=label, status=status, ref_indicator=ref_indicator,
-                                computation=computation, value=value, ref_area=ref_area,
-                                ref_year=ref_year)
-    obs = _when(event)
-    publish(event)
-    return obs
 
 # =======================================================================================
 # Mutators - all aggregate creation and mutation is performed by the generic _when()
 # function.
-#
 
 
 def mutate(obj, event):
-    return _when(event, obj)
+    return when(event, obj)
 
 
 # These dispatch on the type of the first arg, hence (event, self)
 
 
 @singledispatch
-def _when(event, entity):
+def when(event, entity):
     """Modify an entity (usually an aggregate root) by replaying an event."""
     raise NotImplementedError("No _when() implementation for {!r}".format(event))
 
 
-@_when.register(Observation.Created)
+@when.register(Observation.Created)
 def _(event, obj=None):
     """Create a new aggregate root"""
     obs = Observation(event)
@@ -249,48 +227,13 @@ def _(event, obj=None):
     return obs
 
 
-@_when.register(Observation.Discarded)
+@when.register(Observation.Discarded)
 def _(event, obs):
     obs.validate_event_originator(event)
     obs._discarded = True
     obs.increment_version()
     return obs
 
-
-# =======================================================================================
-# Repository
-
-
-class Repository(object):
-    """
-    Abstract implementation of generic queries for managing observations.
-    This will be sub-classed with an infrastructure specific implementation
-    which will customize all the queries
-    """
-    __metaclass__ = ABCMeta
-
-    def __init__(self, **kwargs):
-        super(Repository, self).__init__(**kwargs)
-
-    def all_observations(self, obs_ids=None):
-        return self.observations_where(lambda obs: True, obs_ids)
-
-    def observation_from_area(self, ref_area, obs_ids=None):
-        return self.observations_where(lambda obs: obs.ref_area == ref_area, obs_ids)
-
-    def observation_with_id(self, obs_id):
-        try:
-            return self.all_observations(obs_id)
-        except ValueError:
-            print "No Observation with id {}".format(obs_id)
-            raise
-
-    @abstractmethod
-    def observations_where(self, predicate, obs_ids=None):
-        """
-        Subclass implementations must override at least this method
-        """
-        raise NotImplementedError
 
 # =======================================================================================
 # Exceptions
