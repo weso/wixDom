@@ -2,7 +2,7 @@ __author__ = 'guillermo'
 
 from wi.domain.model.entity import Entity
 from singledispatch import singledispatch
-from wi.domain.model.events import DomainEvent
+from wi.domain.model.events import DomainEvent, publish
 from wi.domain.exceptions import ConstraintError
 
 # =======================================================================================
@@ -51,7 +51,7 @@ class Observation(Entity):
                       ref_area=self._ref_area, ref_year=self._ref_year)
 
 # =======================================================================================
-# Accessors
+# Properties
 #
 
     @property
@@ -198,11 +198,23 @@ class Observation(Entity):
         self._ref_year = value
         self.increment_version()
 
+    def discard(self):
+        """Discard this observation.
+
+        After a call to this method, the observation can no longer be used.
+        """
+        self._check_not_discarded()
+        event = Observation.Discarded(originator_id=self.id,
+                                      originator_version=self.version)
+
+        self._apply(event)
+        publish(event)
+
     def _apply(self, event):
         mutate(self, event)
 
 # =======================================================================================
-# Mutators - all aggregate creation and mutation is performed by the generic _when()
+# Mutators - all aggregate creation and mutation is performed by the generic when()
 # function.
 
 
@@ -214,16 +226,17 @@ def mutate(obj, event):
 
 
 @singledispatch
-def when(event, entity):
+def when(event):
     """Modify an entity (usually an aggregate root) by replaying an event."""
-    raise NotImplementedError("No _when() implementation for {!r}".format(event))
+    raise NotImplementedError("No when() implementation for {!r}".format(event))
 
 
 @when.register(Observation.Created)
-def _(event, obj=None):
+def _(event):
     """Create a new aggregate root"""
     obs = Observation(event)
     obs.increment_version()
+    print 'Observation created!'
     return obs
 
 
