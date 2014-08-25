@@ -3,13 +3,13 @@ __author__ = 'guillermo'
 from wi.domain.model.entity import Entity
 from singledispatch import singledispatch
 from wi.domain.model.events import DomainEvent, publish
-from wi.domain.exceptions import ConstraintError
+import uuid
+from .computation import Computation
+
 
 # =======================================================================================
 # Observation aggregate root entity
-#
-
-
+# =======================================================================================
 class Observation(Entity):
     """ Observation aggregate root entity
     """
@@ -19,12 +19,12 @@ class Observation(Entity):
     class Discarded(Entity.Discarded):
         pass
 
-    class ReferencedIndicator(DomainEvent):
+    class NewComputationAdded(DomainEvent):
         pass
 
     def __init__(self, event):
         super(Observation, self).__init__(event.originator_id, event.originator_version)
-        self._computation = event.computation
+        self._computation = None
         self._issued = event.issued
         self._publisher = event.publisher
         self._data_set = event.data_set
@@ -43,7 +43,7 @@ class Observation(Entity):
                "type={obs_type!r}, label={label!r}, status={status!r}, " \
                "ref_indicator={ref_indicator!r}, value={value!r}, " \
                "ref_area={ref_area!r}, ref_year={ref_year!r}) ".\
-               format(d="*Discarded* " if self._discarded else "", id=self._id,
+               format(d="*Discarded* " if self.discarded else "", id=self._id,
                       computation=self._computation, issued=self._issued,
                       publisher=self._publisher, data_set=self._data_set,
                       obs_type=self._type, label=self._label, status=self._status,
@@ -52,8 +52,7 @@ class Observation(Entity):
 
 # =======================================================================================
 # Properties
-#
-
+# =======================================================================================
     @property
     def computation(self):
         self._check_not_discarded()
@@ -210,14 +209,59 @@ class Observation(Entity):
         self._apply(event)
         publish(event)
 
+    def computation_with_name(self, name):
+        if self.computation.name == name:
+            return self.computation
+        raise ValueError("No computation with name '{}'".format(name))
+
+    @staticmethod
+    def validate_computation_type(type):
+        if type not in ["raw", "normalized", "ranked", "scored", "grouped"]:
+            raise ValueError("There is no {} computation type".format(type))
+        return type
+
+    def add_new_computation(self, name=None, type=None, reason=None, slice=None,
+                            dimension=None, mean=None, std_deviation=None, value_max=None,
+                            value_min=None, component=None, data_set=None,
+                            filter_dimension=None, filter_value=None):
+
+        self._check_not_discarded()
+        event = Observation.NewComputationAdded(
+            originator_id=self.id, originator_version=self.version,
+            computation_id=uuid.uuid4().hex[:24], computation_version=0, name=name,
+            type=self.validate_computation_type(type), reason=reason, slice=slice,
+            dimension=dimension, mean=mean, std_deviation=std_deviation,
+            value_max=value_max, value_min=value_min, component=component,
+            data_set=data_set, filter_dimension=filter_dimension, filter_value=filter_value)
+
+        self._apply(event)
+        publish(event)
+        return self.computation_with_name(name)
+
     def _apply(self, event):
         mutate(self, event)
+
+
+# =======================================================================================
+# Observation aggregate root factory
+# =======================================================================================
+def create_observation(issued=None, publisher=None, data_set=None, obs_type=None,
+                       label=None, status=None, ref_indicator=None, value=None,
+                       ref_area=None, ref_year=None):
+    obs_id = uuid.uuid4().hex[:24]
+    event = Observation.Created(originator_id=obs_id, originator_version=0, issued=issued,
+                                publisher=publisher, data_set=data_set, obs_type=obs_type,
+                                label=label, status=status, ref_indicator=ref_indicator,
+                                value=value, ref_area=ref_area, ref_year=ref_year)
+    obs = when(event)
+    publish(event)
+    return obs
+
 
 # =======================================================================================
 # Mutators - all aggregate creation and mutation is performed by the generic when()
 # function.
-
-
+# =======================================================================================
 def mutate(obj, event):
     return when(event, obj)
 
@@ -236,7 +280,6 @@ def _(event):
     """Create a new aggregate root"""
     obs = Observation(event)
     obs.increment_version()
-    print 'Observation created!'
     return obs
 
 
@@ -247,11 +290,18 @@ def _(event, obs):
     obs.increment_version()
     return obs
 
+@when.register(Observation.NewComputationAdded)
+def _(event, obs):
+    obs.validate_event_originator(event)
+    computation = Computation(event, obs)
+    obs._computation = computation
+    obs.increment_version()
+    return obs
+
 
 # =======================================================================================
 # Exceptions
-
-
+# =======================================================================================
 class DiscardedEntityError(Exception):
     """Raised when an attempt is made to use a discarded Entity."""
     pass
