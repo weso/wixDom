@@ -19,7 +19,7 @@ class Observation(Entity):
     class Discarded(Entity.Discarded):
         pass
 
-    class NewComputationAdded(DomainEvent):
+    class ComputationAdded(DomainEvent):
         pass
 
     def __init__(self, event):
@@ -34,7 +34,7 @@ class Observation(Entity):
         self._ref_indicator = event.ref_indicator
         self._value = event.value
         self._ref_area = event.ref_area
-        self._ref_year = event.ref_year
+        self._ref_year = None
 
     def __repr__(self):
         return "{d}Observation(id={id!r}," \
@@ -44,11 +44,12 @@ class Observation(Entity):
                "ref_indicator={ref_indicator!r}, value={value!r}, " \
                "ref_area={ref_area!r}, ref_year={ref_year!r}) ".\
                format(d="*Discarded* " if self.discarded else "", id=self._id,
-                      computation=self._computation, issued=self._issued,
-                      publisher=self._publisher, data_set=self._data_set,
-                      obs_type=self._type, label=self._label, status=self._status,
-                      ref_indicator=self._ref_indicator, value=self._value,
-                      ref_area=self._ref_area, ref_year=self._ref_year)
+                      computation=self._computation if self.computation else
+                      "no computation added yet",
+                      issued=self._issued, publisher=self._publisher,
+                      data_set=self._data_set, obs_type=self._type, label=self._label,
+                      status=self._status, ref_indicator=self._ref_indicator,
+                      value=self._value, ref_area=self._ref_area, ref_year=self._ref_year)
 
 # =======================================================================================
 # Properties
@@ -209,26 +210,21 @@ class Observation(Entity):
         self._apply(event)
         publish(event)
 
-    def computation_with_name(self, name):
-        if self.computation.name == name:
-            return self.computation
-        raise ValueError("No computation with name '{}'".format(name))
-
     @staticmethod
     def validate_computation_type(_type):
         if _type not in ["raw", "normalized", "ranked", "scored", "grouped"]:
             raise ValueError("There is no {} computation type".format(_type))
         return _type
 
-    def add_new_computation(self, name=None, _type=None, reason=None, _slice=None,
-                            dimension=None, mean=None, std_deviation=None, value_max=None,
-                            value_min=None, component=None, data_set=None,
-                            filter_dimension=None, filter_value=None):
+    def add_computation(self, _type=None, reason=None, _slice=None,
+                        dimension=None, mean=None, std_deviation=None, value_max=None,
+                        value_min=None, component=None, data_set=None,
+                        filter_dimension=None, filter_value=None):
 
         self._check_not_discarded()
-        event = Observation.NewComputationAdded(
+        event = Observation.ComputationAdded(
             originator_id=self.id, originator_version=self.version,
-            computation_id=uuid.uuid4().hex[:24], computation_version=0, name=name,
+            computation_id=uuid.uuid4().hex[:24], computation_version=0,
             type=self.validate_computation_type(_type), reason=reason, slice=_slice,
             dimension=dimension, mean=mean, std_deviation=std_deviation,
             value_max=value_max, value_min=value_min, component=component,
@@ -237,7 +233,7 @@ class Observation(Entity):
 
         self._apply(event)
         publish(event)
-        return self.computation_with_name(name)
+        return self.computation
 
     def _apply(self, event):
         mutate(self, event)
@@ -291,7 +287,7 @@ def _(event, obs):
     obs.increment_version()
     return obs
 
-@when.register(Observation.NewComputationAdded)
+@when.register(Observation.ComputationAdded)
 def _(event, obs):
     obs.validate_event_originator(event)
     computation = Computation(event, obs)
