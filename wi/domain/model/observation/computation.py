@@ -1,5 +1,6 @@
 __author__ = 'guillermo'
 from wi.domain.model.entity import Entity
+from utility.mutators import mutate
 
 
 class Computation(Entity):
@@ -80,6 +81,7 @@ class Computation(Entity):
 # =======================================================================================
     @property
     def name(self):
+        self._check_not_discarded()
         return self._name
 
     @name.setter
@@ -92,6 +94,7 @@ class Computation(Entity):
 
     @property
     def type(self):
+        self._check_not_discarded()
         return self._type
 
     @type.setter
@@ -104,6 +107,7 @@ class Computation(Entity):
 
     @property
     def reason(self):
+        self._check_not_discarded()
         return self._reason
 
     @reason.setter
@@ -116,6 +120,7 @@ class Computation(Entity):
 
     @property
     def dimension(self):
+        self._check_not_discarded()
         return self._dimension
 
     @dimension.setter
@@ -128,6 +133,7 @@ class Computation(Entity):
 
     @property
     def mean(self):
+        self._check_not_discarded()
         return self._mean
 
     @mean.setter
@@ -140,6 +146,7 @@ class Computation(Entity):
 
     @property
     def std_deviation(self):
+        self._check_not_discarded()
         return self._std_deviation
 
     @std_deviation.setter
@@ -152,6 +159,7 @@ class Computation(Entity):
 
     @property
     def value_max(self):
+        self._check_not_discarded()
         return self._value_max
 
     @value_max.setter
@@ -164,6 +172,7 @@ class Computation(Entity):
 
     @property
     def value_min(self):
+        self._check_not_discarded()
         return self._reason
 
     @value_min.setter
@@ -176,6 +185,7 @@ class Computation(Entity):
 
     @property
     def filter_dimension(self):
+        self._check_not_discarded()
         return self._filter_dimension
 
     @filter_dimension.setter
@@ -188,6 +198,7 @@ class Computation(Entity):
 
     @property
     def filter_value(self):
+        self._check_not_discarded()
         return self._filter_dimension
 
     @filter_value.setter
@@ -197,6 +208,12 @@ class Computation(Entity):
             raise ValueError("Computation's filter value cannot be empty")
         self._filter_value = value
         self.increment_version()
+
+# =======================================================================================
+# Commands
+# =======================================================================================
+    def _apply(self, event):
+        mutate(self, event)
 
 
 
