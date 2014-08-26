@@ -8,7 +8,7 @@ class Computation(Entity):
     def __init__(self, event, observation):
         super(Computation, self).__init__(event.computation_id, event.computation_version)
         self._observation = observation
-        self._name = event.name
+        self._name = '_'.join(['comp', self._id])
 
         # Raw
         self._type = event.type
