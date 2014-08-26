@@ -215,12 +215,12 @@ class Observation(Entity):
         raise ValueError("No computation with name '{}'".format(name))
 
     @staticmethod
-    def validate_computation_type(type):
-        if type not in ["raw", "normalized", "ranked", "scored", "grouped"]:
-            raise ValueError("There is no {} computation type".format(type))
-        return type
+    def validate_computation_type(_type):
+        if _type not in ["raw", "normalized", "ranked", "scored", "grouped"]:
+            raise ValueError("There is no {} computation type".format(_type))
+        return _type
 
-    def add_new_computation(self, name=None, type=None, reason=None, slice=None,
+    def add_new_computation(self, name=None, _type=None, reason=None, _slice=None,
                             dimension=None, mean=None, std_deviation=None, value_max=None,
                             value_min=None, component=None, data_set=None,
                             filter_dimension=None, filter_value=None):
@@ -229,10 +229,11 @@ class Observation(Entity):
         event = Observation.NewComputationAdded(
             originator_id=self.id, originator_version=self.version,
             computation_id=uuid.uuid4().hex[:24], computation_version=0, name=name,
-            type=self.validate_computation_type(type), reason=reason, slice=slice,
+            type=self.validate_computation_type(_type), reason=reason, slice=_slice,
             dimension=dimension, mean=mean, std_deviation=std_deviation,
             value_max=value_max, value_min=value_min, component=component,
-            data_set=data_set, filter_dimension=filter_dimension, filter_value=filter_value)
+            data_set=data_set, filter_dimension=filter_dimension,
+            filter_value=filter_value)
 
         self._apply(event)
         publish(event)
