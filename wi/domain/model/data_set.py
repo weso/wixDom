@@ -3,7 +3,7 @@ from wi.domain.model.entity import Entity
 import uuid
 from .events import DomainEvent, publish
 from utility.mutators import when, mutate
-from ..exceptions import ConstraintError
+from ..exceptions import ConstraintError, DiscardedEntityError
 
 
 class DataSet(Entity):
@@ -81,7 +81,7 @@ class DataSet(Entity):
 # Commands
 # =======================================================================================
     def discard(self):
-        """Discard this observation.
+        """Discard this data_set.
 
         After a call to this method, the data_set can no longer be used.
         """
@@ -172,11 +172,3 @@ def _(event, data_set):
     data_set._slice_ids.append(event.slice_id)
     data_set.increment_version()
     return data_set
-
-
-# =======================================================================================
-# Exceptions
-# =======================================================================================
-class DiscardedEntityError(Exception):
-    """Raised when an attempt is made to use a discarded Entity."""
-    pass

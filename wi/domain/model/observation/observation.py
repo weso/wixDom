@@ -1,11 +1,11 @@
 __author__ = 'guillermo'
 
 from wi.domain.model.entity import Entity
-from singledispatch import singledispatch
 from wi.domain.model.events import DomainEvent, publish
 import uuid
 from .computation import Computation
 from utility.mutators import mutate, when
+from abc import ABCMeta, abstractmethod
 
 
 # =======================================================================================
@@ -286,11 +286,3 @@ def _(event, obs):
     obs._computation = computation
     obs.increment_version()
     return obs
-
-
-# =======================================================================================
-# Exceptions
-# =======================================================================================
-class DiscardedEntityError(Exception):
-    """Raised when an attempt is made to use a discarded Entity."""
-    pass
