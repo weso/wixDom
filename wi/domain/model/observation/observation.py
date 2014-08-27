@@ -1,10 +1,11 @@
 __author__ = 'guillermo'
 
 from wi.domain.model.entity import Entity
-from singledispatch import singledispatch
 from wi.domain.model.events import DomainEvent, publish
 import uuid
 from .computation import Computation
+from utility.mutators import mutate, when
+from abc import ABCMeta, abstractmethod
 
 
 # =======================================================================================
@@ -198,6 +199,9 @@ class Observation(Entity):
         self._ref_year = value
         self.increment_version()
 
+# =======================================================================================
+# Commands
+# =======================================================================================
     def discard(self):
         """Discard this observation.
 
@@ -259,19 +263,6 @@ def create_observation(issued=None, publisher=None, data_set=None, obs_type=None
 # Mutators - all aggregate creation and mutation is performed by the generic when()
 # function.
 # =======================================================================================
-def mutate(obj, event):
-    return when(event, obj)
-
-
-# These dispatch on the type of the first arg, hence (event, self)
-
-
-@singledispatch
-def when(event):
-    """Modify an entity (usually an aggregate root) by replaying an event."""
-    raise NotImplementedError("No when() implementation for {!r}".format(event))
-
-
 @when.register(Observation.Created)
 def _(event):
     """Create a new aggregate root"""
@@ -287,6 +278,7 @@ def _(event, obs):
     obs.increment_version()
     return obs
 
+
 @when.register(Observation.ComputationAdded)
 def _(event, obs):
     obs.validate_event_originator(event)
@@ -294,11 +286,3 @@ def _(event, obs):
     obs._computation = computation
     obs.increment_version()
     return obs
-
-
-# =======================================================================================
-# Exceptions
-# =======================================================================================
-class DiscardedEntityError(Exception):
-    """Raised when an attempt is made to use a discarded Entity."""
-    pass
