@@ -1,18 +1,15 @@
 __author__ = 'guillermo'
 
 
-from wi.domain.model.entity import Entity
-from abc import ABCMeta, abstractmethod
+from webindex.domain.model.entity import Entity
 import uuid
-from singledispatch import singledispatch
-from wi.domain.model.events import DomainEvent
-from wi.domain.model.events import publish
+from webindex.domain.model.events import publish
+from utility.mutators import when, mutate
+
 
 # =======================================================================================
 # Indicator aggregate root entity
-#
-
-
+# =======================================================================================
 class Indicator(Entity):
     """ Indicator aggregate root entity
     """
@@ -27,9 +24,8 @@ class Indicator(Entity):
         self._country_coverage = event.country_coverage
         self._provider_link = event.provider_link
         self._republish = event.republish
-        self._component = event.component
         self._high_low = event.high_low
-        self._ind_type = event.ind_type
+        self._type = event.type
         self._label = event.label
         self._comment = event.comment
         self._notation = event.notation
@@ -38,23 +34,17 @@ class Indicator(Entity):
 
     def __repr__(self):
         return "{d}Indicator(id={id!r}," \
-               "country_coverage={country_coverage!r}, provider_link={provider_link!r}," \
-               "republish={republish!r}, component={component!r}, " \
-               "high_low={high_low!r}, ind_type={ind_type!r}, label={label!r}, " \
-               "comment={comment!r}, notation={notation!r}" \
-               "interval_starts={interval_starts!r}, interval_ends={interval_ends!r}) ".\
-               format(d="*Discarded* " if self._discarded else "", id=self._id,
-                      country_coverage=self._country_coverage,
-                      provider_link=self._provider_link, republish=self._republish,
-                      component=self._component, high_low=self._high_low,
-                      ind_type=self._ind_type, label=self._label, comment=self._comment,
-                      notation=self._notation, interval_starts=self._interval_starts,
-                      interval_ends=self._interval_ends)
+               "country_coverage={i._country_coverage!r}, " \
+               "provider_link={i._provider_link!r}," \
+               "republish={i._republish!r}, high_low={i._high_low!r}, " \
+               "type={i._type!r}, label={i._label!r}, comment={i._comment!r}, " \
+               "notation={i._notation!r}, interval_starts={i._interval_starts!r}, " \
+               "interval_ends={i._interval_ends!r})".\
+               format(d="*Discarded* " if self._discarded else "", id=self._id, i=self)
 
 # =======================================================================================
-# Accessors
-#
-
+# Properties
+# =======================================================================================
     @property
     def country_coverage(self):
         self._check_not_discarded()
@@ -95,19 +85,6 @@ class Indicator(Entity):
         self.increment_version()
 
     @property
-    def component(self):
-        self._check_not_discarded()
-        return self._component
-
-    @component.setter
-    def component(self, value):
-        self._check_not_discarded()
-        if len(value) < 1:
-            raise ValueError("Indicator's component cannot be empty")
-        self._component = value
-        self.increment_version()
-
-    @property
     def high_low(self):
         self._check_not_discarded()
         return self._high_low
@@ -123,14 +100,14 @@ class Indicator(Entity):
     @property
     def ind_type(self):
         self._check_not_discarded()
-        return self._ind_type
+        return self._type
 
     @ind_type.setter
     def ind_type(self, value):
         self._check_not_discarded()
         if len(value) < 1:
             raise ValueError("Indicator's ind_type cannot be empty")
-        self._ind_type = value
+        self._type = value
         self.increment_version()
 
     @property
@@ -197,3 +174,58 @@ class Indicator(Entity):
             raise ValueError("Indicator's interval_ends cannot be empty")
         self._interval_ends = value
         self.increment_version()
+
+# =======================================================================================
+# Commands
+# =======================================================================================
+    def discard(self):
+        """Discard this indicator.
+
+        After a call to this method, the indicator can no longer be used.
+        """
+        self._check_not_discarded()
+        event = Indicator.Discarded(originator_id=self.id,
+                                    originator_version=self.version)
+
+        self._apply(event)
+        publish(event)
+
+    def _apply(self, event):
+        mutate(self, event)
+
+
+# =======================================================================================
+# Indicator aggregate root factory
+# =======================================================================================
+def create_indicator(_type=None, country_coverage=None, provider_link=None,
+                     republish=None, high_low=None, label=None, comment=None,
+                     notation=None, interval_starts=None, interval_ends=None):
+    indicator_id = uuid.uuid4().hex[:24]
+    event = Indicator.Created(originator_id=indicator_id, originator_version=0,
+                              type=_type, country_coverage=country_coverage,
+                              provider_link=provider_link, republish=republish,
+                              high_low=high_low, label=label, comment=comment,
+                              notation=notation, interval_starts=interval_starts,
+                              interval_ends=interval_ends)
+    indicator = when(event)
+    publish(event)
+    return indicator
+
+
+# =======================================================================================
+# Mutators
+# =======================================================================================
+@when.register(Indicator.Created)
+def _(event):
+    """Create a new aggregate root"""
+    indicator = Indicator(event)
+    indicator.increment_version()
+    return indicator
+
+
+@when.register(Indicator.Discarded)
+def _(event, indicator):
+    indicator.validate_event_originator(event)
+    indicator._discarded = True
+    indicator.increment_version()
+    return indicator

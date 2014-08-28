@@ -1,6 +1,6 @@
 __author__ = 'guillermo'
 
-from wi.domain.model.entity import Entity
+from webindex.domain.model.entity import Entity
 import uuid
 from .events import DomainEvent, publish
 from utility.mutators import when, mutate

@@ -1,5 +1,5 @@
 __author__ = 'guillermo'
-from wi.domain.model.observation.repository import Repository
+from webindex.domain.model.observation.repository import Repository
 
 
 class ObservationRepository(Repository):

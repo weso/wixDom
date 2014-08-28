@@ -1,5 +1,5 @@
 __author__ = 'guillermo'
-from wi.domain.model.entity import Entity
+from webindex.domain.model.entity import Entity
 from utility.mutators import mutate
 
 
@@ -35,7 +35,6 @@ class Computation(Entity):
         self._filter_dimension = event.filter_dimension
         self._filter_value = event.filter_value
 
-    # TODO Add try except to raise a ValueError on type
     def __repr__(self):
         rep = ""
         if self._type == 'raw':

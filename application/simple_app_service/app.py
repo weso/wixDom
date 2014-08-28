@@ -1,6 +1,6 @@
 __author__ = 'guillermo'
 
-from wi.domain.model.observation.observation import create_observation
+from webindex.domain.model.observation.observation import create_observation
 from infrastructure.mongo_repos.mongo_connection import MongoConnection
 from config import *
 from bson.objectid import ObjectId

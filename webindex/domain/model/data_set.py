@@ -1,5 +1,5 @@
 __author__ = 'guillermo'
-from wi.domain.model.entity import Entity
+from webindex.domain.model.entity import Entity
 import uuid
 from .events import DomainEvent, publish
 from utility.mutators import when, mutate
@@ -41,11 +41,11 @@ class DataSet(Entity):
             format(d="*Discarded* " if self._discarded else "", s=self,
                    n=len(self._slice_ids))
 
-    def __contains__(self, slice):
+    def __contains__(self, _slice):
         """Determine whether a particular slice is present in this DataSet.
         """
         self._check_not_discarded()
-        return slice.id in self._slice_ids
+        return _slice.id in self._slice_ids
 
 # =======================================================================================
 # Properties

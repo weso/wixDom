@@ -1,5 +1,5 @@
-from wi.domain.exceptions import ConsistencyError
-from wi.domain.model.events import DomainEvent
+from webindex.domain.exceptions import ConsistencyError
+from webindex.domain.model.events import DomainEvent
 
 
 # =======================================================================================
