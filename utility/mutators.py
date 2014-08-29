@@ -1,4 +1,3 @@
-__author__ = 'guillermo'
 from singledispatch import singledispatch
 
 

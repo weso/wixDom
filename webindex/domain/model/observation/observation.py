@@ -23,6 +23,12 @@ class Observation(Entity):
     class ComputationAdded(DomainEvent):
         pass
 
+    class ReferencedArea(DomainEvent):
+        pass
+
+    class ReferencedIndicator(DomainEvent):
+        pass
+
     def __init__(self, event):
         super(Observation, self).__init__(event.originator_id, event.originator_version)
         self._computation = None
@@ -32,9 +38,9 @@ class Observation(Entity):
         self._type = event.obs_type
         self._label = event.label
         self._status = event.status
-        self._ref_indicator = event.ref_indicator
+        self._ref_indicator_id = None
         self._value = event.value
-        self._ref_area = event.ref_area
+        self._ref_area_id = None
         self._ref_year = None
 
     def __repr__(self):
@@ -49,8 +55,8 @@ class Observation(Entity):
                       "no computation added yet",
                       issued=self._issued, publisher=self._publisher,
                       data_set=self._data_set, obs_type=self._type, label=self._label,
-                      status=self._status, ref_indicator=self._ref_indicator,
-                      value=self._value, ref_area=self._ref_area, ref_year=self._ref_year)
+                      status=self._status, ref_indicator=self._ref_indicator_id,
+                      value=self._value, ref_area=self._ref_area_id, ref_year=self._ref_year)
 
 # =======================================================================================
 # Properties
@@ -149,14 +155,14 @@ class Observation(Entity):
     @property
     def ref_indicator(self):
         self._check_not_discarded()
-        return self._ref_indicator
+        return self._ref_indicator_id
 
     @ref_indicator.setter
     def ref_indicator(self, value):
         self._check_not_discarded()
         if len(value) < 1:
             raise ValueError("Observation's ref_indicator cannot be empty")
-        self._ref_indicator = value
+        self._ref_indicator_id = value
         self.increment_version()
 
     @property
@@ -175,14 +181,14 @@ class Observation(Entity):
     @property
     def ref_area(self):
         self._check_not_discarded()
-        return self._ref_area
+        return self._ref_area_id
 
     @ref_area.setter
     def ref_area(self, value):
         self._check_not_discarded()
         if len(value) < 1:
             raise ValueError("Observation's area cannot be empty")
-        self._ref_area = value
+        self._ref_area_id = value
         self.increment_version()
 
     @property

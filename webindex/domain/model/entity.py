@@ -4,7 +4,7 @@ from webindex.domain.model.events import DomainEvent
 
 # =======================================================================================
 # Entities
-#
+# =======================================================================================
 
 class Entity(object):
     """The base class of all entities.
@@ -65,7 +65,7 @@ class Entity(object):
 
 # =======================================================================================
 # Exceptions - for signalling errors
-#
+# =======================================================================================
 
 class DiscardedEntityError(Exception):
     """Raised when an attempt is made to use a discarded Entity."""
