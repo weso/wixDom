@@ -5,7 +5,7 @@ from webindex.domain.model.events import DomainEvent, publish
 import uuid
 from .computation import Computation
 from utility.mutators import mutate, when
-from abc import ABCMeta, abstractmethod
+from ...exceptions import DiscardedEntityError, ConstraintError
 
 
 # =======================================================================================
@@ -34,29 +34,29 @@ class Observation(Entity):
         self._computation = None
         self._issued = event.issued
         self._publisher = event.publisher
-        self._data_set = event.data_set
         self._type = event.obs_type
         self._label = event.label
         self._status = event.status
         self._ref_indicator_id = None
-        self._value = event.value
         self._ref_area_id = None
+        self._value = event.value
         self._ref_year = None
 
     def __repr__(self):
         return "{d}Observation(id={id!r}," \
                "computation={computation!r}, issued={issued!r}, " \
-               "publisher={publisher!r}, data_set={data_set!r}, " \
-               "type={obs_type!r}, label={label!r}, status={status!r}, " \
+               "publisher={publisher!r}, type={obs_type!r}, label={label!r}, " \
+               "status={status!r}, " \
                "ref_indicator={ref_indicator!r}, value={value!r}, " \
                "ref_area={ref_area!r}, ref_year={ref_year!r}) ".\
                format(d="*Discarded* " if self.discarded else "", id=self._id,
                       computation=self._computation if self.computation else
                       "no computation added yet",
                       issued=self._issued, publisher=self._publisher,
-                      data_set=self._data_set, obs_type=self._type, label=self._label,
+                      obs_type=self._type, label=self._label,
                       status=self._status, ref_indicator=self._ref_indicator_id,
-                      value=self._value, ref_area=self._ref_area_id, ref_year=self._ref_year)
+                      value=self._value, ref_area=self._ref_area_id,
+                      ref_year=self._ref_year)
 
 # =======================================================================================
 # Properties
@@ -101,19 +101,6 @@ class Observation(Entity):
         self.increment_version()
 
     @property
-    def data_set(self):
-        self._check_not_discarded()
-        return self._data_set
-
-    @data_set.setter
-    def data_set(self, value):
-        self._check_not_discarded()
-        if len(value) < 1:
-            raise ValueError("Observation's data_set cannot be empty")
-        self._data_set = value
-        self.increment_version()
-
-    @property
     def obs_type(self):
         self._check_not_discarded()
         return self._type
@@ -153,19 +140,6 @@ class Observation(Entity):
         self.increment_version()
 
     @property
-    def ref_indicator(self):
-        self._check_not_discarded()
-        return self._ref_indicator_id
-
-    @ref_indicator.setter
-    def ref_indicator(self, value):
-        self._check_not_discarded()
-        if len(value) < 1:
-            raise ValueError("Observation's ref_indicator cannot be empty")
-        self._ref_indicator_id = value
-        self.increment_version()
-
-    @property
     def value(self):
         self._check_not_discarded()
         return self._value
@@ -183,13 +157,10 @@ class Observation(Entity):
         self._check_not_discarded()
         return self._ref_area_id
 
-    @ref_area.setter
-    def ref_area(self, value):
+    @property
+    def ref_indicator(self):
         self._check_not_discarded()
-        if len(value) < 1:
-            raise ValueError("Observation's area cannot be empty")
-        self._ref_area_id = value
-        self.increment_version()
+        return self._ref_indicator_id
 
     @property
     def ref_year(self):
@@ -245,6 +216,46 @@ class Observation(Entity):
         publish(event)
         return self.computation
 
+    def reference_indicator(self, indicator):
+        """Reference an indicator from this observation.
+
+        Args:
+            indicator: The Indicator to be referenced from this observation.
+
+        Raises:
+            DiscardedEntityError: If this observation or the indicator has been discarded.
+            """
+        self._check_not_discarded()
+
+        if indicator.discarded:
+            raise DiscardedEntityError("Cannot reference {!r}".format(indicator))
+
+        event = Observation.ReferencedIndicator(originator_id=self.id,
+                                                originator_version=self.version,
+                                                indicator_id=indicator.id)
+        self._apply(event)
+        publish(event)
+
+    def reference_area(self, area):
+        """Reference an area from this observation.
+
+        Args:
+            area: The area (Region or Country) to be referenced from this observation.
+
+        Raises:
+            DiscardedEntityError: If this observation or the area has been discarded.
+            """
+
+        self._check_not_discarded()
+        if area.discarded:
+            raise DiscardedEntityError("Cannot reference {!r}".format(area))
+
+        event = Observation.ReferencedArea(originator_id=self.id,
+                                           originator_version=self.version,
+                                           area_id=area.id)
+        self._apply(event)
+        publish(event)
+
     def _apply(self, event):
         mutate(self, event)
 
@@ -289,5 +300,21 @@ def _(event, obs):
     obs.validate_event_originator(event)
     computation = Computation(event, obs)
     obs._computation = computation
+    obs.increment_version()
+    return obs
+
+
+@when.register(Observation.ReferencedIndicator)
+def _(event, obs):
+    obs.validate_event_originator(event)
+    obs._ref_indicator_id = event.indicator_id
+    obs.increment_version()
+    return obs
+
+
+@when.register(Observation.ReferencedArea)
+def _(event, obs):
+    obs.validate_event_originator(event)
+    obs._ref_area_id = event.area_id
     obs.increment_version()
     return obs

@@ -93,3 +93,9 @@ region = create_region("Europe")
 country = region.relate_country(iso2_code="SP", label="Spain")
 print region
 print country
+
+
+# References by ID
+obs1.reference_indicator(index)
+obs1.reference_area(country)
+print obs1.ref_area, obs1.ref_indicator
