@@ -4,7 +4,8 @@ from webindex.domain.model.observation.observation import create_observation
 from webindex.domain.model.observation.year import Year
 from webindex.domain.model.data_set import create_data_set
 from webindex.domain.model.slice import create_slice
-from webindex.domain.model.indicator import create_indicator
+from webindex.domain.model.indicator.indicator import create_indicator
+from webindex.domain.model.indicator.organization import Organization
 from webindex.domain.model.component import create_component
 from webindex.domain.model.subindex import create_sub_index
 from webindex.domain.model.index import create_index
@@ -48,6 +49,7 @@ print "*************************************************************************
 
 # Indicators
 ind1 = create_indicator(_type='secondary')
+ind1.organization = Organization('World Bank')
 ind2 = create_indicator(_type='primary')
 indicators = [ind1, ind2]
 pp(indicators)

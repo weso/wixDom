@@ -31,6 +31,7 @@ class Indicator(Entity):
         self._notation = event.notation
         self._interval_starts = event.interval_starts
         self._interval_ends = event.interval_ends
+        self._organization = None
 
     def __repr__(self):
         return "{d}Indicator(id={id!r}," \
@@ -39,7 +40,7 @@ class Indicator(Entity):
                "republish={i._republish!r}, high_low={i._high_low!r}, " \
                "type={i._type!r}, label={i._label!r}, comment={i._comment!r}, " \
                "notation={i._notation!r}, interval_starts={i._interval_starts!r}, " \
-               "interval_ends={i._interval_ends!r})".\
+               "interval_ends={i._interval_ends!r}, organization={i._organization})".\
                format(d="*Discarded* " if self._discarded else "", id=self._id, i=self)
 
 # =======================================================================================
@@ -175,6 +176,17 @@ class Indicator(Entity):
         self._interval_ends = value
         self.increment_version()
 
+    @property
+    def organization(self):
+        self._check_not_discarded()
+        return self._organization
+
+    @organization.setter
+    def organization(self, value):
+        self._check_not_discarded()
+        self._organization = value
+        self.increment_version()
+
 # =======================================================================================
 # Commands
 # =======================================================================================
@@ -199,14 +211,15 @@ class Indicator(Entity):
 # =======================================================================================
 def create_indicator(_type=None, country_coverage=None, provider_link=None,
                      republish=None, high_low=None, label=None, comment=None,
-                     notation=None, interval_starts=None, interval_ends=None):
+                     notation=None, interval_starts=None, interval_ends=None,
+                     organization=None):
     indicator_id = uuid.uuid4().hex[:24]
     event = Indicator.Created(originator_id=indicator_id, originator_version=0,
                               type=_type, country_coverage=country_coverage,
                               provider_link=provider_link, republish=republish,
                               high_low=high_low, label=label, comment=comment,
                               notation=notation, interval_starts=interval_starts,
-                              interval_ends=interval_ends)
+                              interval_ends=interval_ends, organization=organization)
     indicator = when(event)
     publish(event)
     return indicator
