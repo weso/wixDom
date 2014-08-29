@@ -260,8 +260,7 @@ def create_observation(issued=None, publisher=None, data_set=None, obs_type=None
 
 
 # =======================================================================================
-# Mutators - all aggregate creation and mutation is performed by the generic when()
-# function.
+# Mutators
 # =======================================================================================
 @when.register(Observation.Created)
 def _(event):
