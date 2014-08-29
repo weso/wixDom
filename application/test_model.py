@@ -8,6 +8,7 @@ from webindex.domain.model.indicator import create_indicator
 from webindex.domain.model.component import create_component
 from webindex.domain.model.subindex import create_sub_index
 from webindex.domain.model.index import create_index
+from webindex.domain.model.area.region import create_region
 from pprint import pprint as pp
 
 
@@ -85,4 +86,10 @@ for s in sub_indexes:
     index.add_sub_index(s)
 print "SubIndexes in index {} ->".format(index.type), [sb for sb in
                                                        index.sub_index_ids()]
+print "****************************************************************************"
 
+#Area
+region = create_region("Europe")
+country = region.relate_country(iso2_code="SP", label="Spain")
+print region
+print country
