@@ -145,10 +145,7 @@ class Repository(object):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, **kwargs):
-        super(Repository, self).__init__(**kwargs)
-
-    def find_countries_by_code(self, area_code=None):
+    def find_countries_by_code(self, area_code):
         return self.areas_where(lambda area: True, area_code)
 
     def find_continents(self):
@@ -161,7 +158,7 @@ class Repository(object):
         return self.areas_where(lambda area: True, area_code)
 
     @abstractmethod
-    def areas_where(self, predicate, obs_ids=None):
+    def areas_where(self, predicate, area_ids=None):
         """
         Subclass implementations must override at least this method
         """
