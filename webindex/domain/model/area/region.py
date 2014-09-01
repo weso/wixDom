@@ -5,6 +5,7 @@ import uuid
 from ..events import DomainEvent, publish
 from utility.mutators import when, mutate
 from .country import Country
+from abc import ABCMeta, abstractmethod
 
 
 class Region(Entity):
@@ -131,3 +132,37 @@ def _(event, region):
     region._countries.append(country)
     region.increment_version()
     return region
+
+
+# =======================================================================================
+# Area Repository
+# =======================================================================================
+class Repository(object):
+    """
+    Abstract implementation of generic queries for managing areas.
+    This will be sub-classed with an infrastructure specific implementation
+    which will customize all the queries
+    """
+    __metaclass__ = ABCMeta
+
+    def __init__(self, **kwargs):
+        super(Repository, self).__init__(**kwargs)
+
+    def find_countries_by_code(self, area_code=None):
+        return self.areas_where(lambda area: True, area_code)
+
+    def find_continents(self):
+        return self.areas_where(lambda area: True)
+
+    def find_countries(self):
+        return self.areas_where(lambda area: True)
+
+    def area_error(self, area_code):
+        return self.areas_where(lambda area: True, area_code)
+
+    @abstractmethod
+    def areas_where(self, predicate, obs_ids=None):
+        """
+        Subclass implementations must override at least this method
+        """
+        raise NotImplementedError
