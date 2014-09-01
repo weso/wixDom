@@ -1,8 +1,7 @@
 argparse==1.2.1
-bson==0.3.3
 itsdangerous==0.24
 pymongo==2.7.2
-pytz==2014.4
+pytz==2014.7
 singledispatch==3.4.0.3
 six==1.7.3
 wsgiref==0.1.2
