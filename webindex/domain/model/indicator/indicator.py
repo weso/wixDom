@@ -5,6 +5,7 @@ from webindex.domain.model.entity import Entity
 import uuid
 from webindex.domain.model.events import publish
 from utility.mutators import when, mutate
+from abc import ABCMeta
 
 
 # =======================================================================================
@@ -242,3 +243,41 @@ def _(event, indicator):
     indicator._discarded = True
     indicator.increment_version()
     return indicator
+
+
+# =======================================================================================
+# Indicator Repository
+# =======================================================================================
+class Repository(object):
+    """Abstract implementation of generic queries for managing indicators."""
+    __metaclass__ = ABCMeta
+
+    def find_indicator_by_code(self, indicator_code):
+        pass
+
+    def find_indicators_index(self):
+        pass
+
+    def find_indicators_sub_indexes(self):
+        pass
+
+    def find_indicators_components(self, parent=None):
+        pass
+
+    def find_indicators_primary(self, parent=None):
+        pass
+
+    def find_indicators_secondary(self, parent=None):
+        pass
+
+    def find_indicator_indicators(self, parent=None):
+        pass
+
+    def find_indicators_by_level(self, level, parent=None):
+        pass
+
+    def find_indicator_children(self, indicator):
+        pass
+
+    def indicator_error(self, indicator_code):
+        pass
