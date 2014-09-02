@@ -23,6 +23,3 @@ docs/_build/
 
 # Compiled
 *.pyc
-
-#Application Services
-application/
