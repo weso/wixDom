@@ -5,7 +5,8 @@ from webindex.domain.model.events import DomainEvent, publish
 import uuid
 from .computation import Computation
 from utility.mutators import mutate, when
-from ...exceptions import DiscardedEntityError, ConstraintError
+from ...exceptions import DiscardedEntityError
+from abc import ABCMeta
 
 
 # =======================================================================================
@@ -318,3 +319,14 @@ def _(event, obs):
     obs._ref_area_id = event.area_id
     obs.increment_version()
     return obs
+
+
+# =======================================================================================
+# Observations Repository
+# =======================================================================================
+class Repository(object):
+    """Abstract implementation of generic queries for managing observations."""
+    __metaclass__ = ABCMeta
+
+    def find_observations(self, indicator_code=None, area_code=None, year=None):
+        pass
