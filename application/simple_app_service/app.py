@@ -24,6 +24,5 @@ def main():
     print "Indicator indicators", ind_repo.find_indicator_indicators()
     print "Indicator error", ind_repo.indicator_error("foo")
 
-
 if __name__ == '__main__':
     main()
