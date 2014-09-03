@@ -15,6 +15,7 @@ from abc import ABCMeta
 class Observation(Entity):
     """ Observation aggregate root entity
     """
+
     class Created(Entity.Created):
         pass
 
@@ -49,19 +50,19 @@ class Observation(Entity):
                "publisher={publisher!r}, type={obs_type!r}, label={label!r}, " \
                "status={status!r}, " \
                "ref_indicator={ref_indicator!r}, value={value!r}, " \
-               "ref_area={ref_area!r}, ref_year={ref_year!r}) ".\
-               format(d="*Discarded* " if self.discarded else "", id=self._id,
-                      computation=self._computation if self.computation else
-                      "no computation added yet",
-                      issued=self._issued, publisher=self._publisher,
-                      obs_type=self._type, label=self._label,
-                      status=self._status, ref_indicator=self._ref_indicator_id,
-                      value=self._value, ref_area=self._ref_area_id,
-                      ref_year=self._ref_year)
+               "ref_area={ref_area!r}, ref_year={ref_year!r}) ". \
+            format(d="*Discarded* " if self.discarded else "", id=self._id,
+                   computation=self._computation if self.computation else
+                   "no computation added yet",
+                   issued=self._issued, publisher=self._publisher,
+                   obs_type=self._type, label=self._label,
+                   status=self._status, ref_indicator=self._ref_indicator_id,
+                   value=self._value, ref_area=self._ref_area_id,
+                   ref_year=self._ref_year)
 
-# =======================================================================================
-# Properties
-# =======================================================================================
+    # =======================================================================================
+    # Properties
+    # =======================================================================================
     @property
     def computation(self):
         self._check_not_discarded()
@@ -177,9 +178,9 @@ class Observation(Entity):
         self._ref_year = value
         self.increment_version()
 
-# =======================================================================================
-# Commands
-# =======================================================================================
+    # =======================================================================================
+    # Commands
+    # =======================================================================================
     def discard(self):
         """Discard this observation.
 
@@ -329,4 +330,19 @@ class Repository(object):
     __metaclass__ = ABCMeta
 
     def find_observations(self, indicator_code=None, area_code=None, year=None):
+        pass
+
+    def get_indicators_by_code(self, code):
+        pass
+
+    def get_countries_by_code_name_or_income(self, code):
+        pass
+
+    def get_years(self, year):
+        pass
+
+    def observation_uri(self, observation):
+        pass
+
+    def set_observation_country_and_indicator_name(self, observation):
         pass
