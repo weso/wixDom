@@ -1,6 +1,5 @@
 __author__ = 'guillermo'
 
-
 from webindex.domain.model.entity import Entity
 import uuid
 from webindex.domain.model.events import publish
@@ -14,6 +13,7 @@ from abc import ABCMeta
 class Indicator(Entity):
     """ Indicator aggregate root entity
     """
+
     class Created(Entity.Created):
         pass
 
@@ -41,12 +41,12 @@ class Indicator(Entity):
                "republish={i._republish!r}, high_low={i._high_low!r}, " \
                "type={i._type!r}, label={i._label!r}, comment={i._comment!r}, " \
                "notation={i._notation!r}, interval_starts={i._interval_starts!r}, " \
-               "interval_ends={i._interval_ends!r}, organization={i._organization})".\
-               format(d="*Discarded* " if self._discarded else "", id=self._id, i=self)
+               "interval_ends={i._interval_ends!r}, organization={i._organization})". \
+            format(d="*Discarded* " if self._discarded else "", id=self._id, i=self)
 
-# =======================================================================================
-# Properties
-# =======================================================================================
+    # =======================================================================================
+    # Properties
+    # =======================================================================================
     @property
     def country_coverage(self):
         self._check_not_discarded()
@@ -188,9 +188,9 @@ class Indicator(Entity):
         self._organization = value
         self.increment_version()
 
-# =======================================================================================
-# Commands
-# =======================================================================================
+    # =======================================================================================
+    # Commands
+    # =======================================================================================
     def discard(self):
         """Discard this indicator.
 
@@ -252,7 +252,7 @@ class Repository(object):
     """Abstract implementation of generic queries for managing indicators."""
     __metaclass__ = ABCMeta
 
-    def find_indicator_by_code(self, indicator_code):
+    def find_indicators_by_code(self, indicator_code):
         pass
 
     def find_indicators_index(self):
@@ -270,7 +270,7 @@ class Repository(object):
     def find_indicators_secondary(self, parent=None):
         pass
 
-    def find_indicator_indicators(self, parent=None):
+    def find_indicators_indicators(self, parent=None):
         pass
 
     def find_indicators_by_level(self, level, parent=None):
@@ -280,4 +280,7 @@ class Repository(object):
         pass
 
     def indicator_error(self, indicator_code):
+        pass
+
+    def indicator_uri(self, indicator_code):
         pass

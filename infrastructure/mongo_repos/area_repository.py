@@ -2,42 +2,96 @@ __author__ = 'guillermo'
 from webindex.domain.model.area import region
 from config import port, db_name, host
 from .mongo_connection import connect_to_db
-from response_status import error
+from utils import error, uri
 
 
 class AreaRepository(region.Repository):
     """Concrete mongodb repository for Areas.
     """
 
-    def __init__(self):
+    def __init__(self, url_root):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
+        self._url_root = url_root
 
-    def find_countries_by_code(self, area_code):
-        area_code_upper = area_code.upper()
-        area = self._db['areas'].find_one({"$or": [{"iso3": area_code},
-                                                   {"iso3": area_code_upper},
-                                                   {"iso2": area_code},
-                                                   {"iso2": area_code_upper},
-                                                   {"name": area_code}]})
+    def find_countries_by_code_or_income(self, area_code_or_income):
+        area_code_or_income_upper = area_code_or_income.upper()
+        area = self._db['areas'].find_one({"$or": [
+            {"iso3": area_code_or_income},
+            {"iso3": area_code_or_income_upper},
+            {"iso2": area_code_or_income},
+            {"iso2": area_code_or_income_upper},
+            {"name": area_code_or_income}]})
+
+        if area is None:
+            # Find if code is an income code
+            countries = self.find_countries_by_continent_or_income(
+                area_code_or_income_upper)
+            if countries is None:
+                return None
+            else:
+                return countries
+
+        self.set_continent_countries(area)
+        self.area_uri(area)
+
         return area
+
+    def find_countries_by_continent_or_income(self, continent_or_income):
+        continent_or_income_upper = continent_or_income.upper()
+        countries = self._db['areas'].find({"$or": [
+            {"area": continent_or_income},
+            {"income": continent_or_income_upper}]})
+
+        if countries.count() == 0:
+            return None
+
+        country_list = []
+
+        for country in countries:
+            self.set_continent_countries(country)
+            self.area_uri(country)
+            country_list.append(country)
+
+        return country_list
 
     def find_continents(self):
         areas = self._db['areas'].find({"area": None})
         continents = []
 
         for continent in areas:
-            name = continent["name"]
-            continent["countries"] = self._db['areas'].find({"area": name})
+            self.set_continent_countries(continent)
+
+            self.area_uri(continent)
             continents.append(continent)
 
         return continents
 
     def find_countries(self):
         countries = self._db['areas'].find({"area": {"$ne": None}})
-        return countries
+        country_list = []
+
+        for country in countries:
+            self.area_uri(country)
+            country_list.append(country)
+
+        return country_list
+
+    def set_continent_countries(self, area):
+        iso3 = area["iso3"]
+        countries = self._db['areas'].find({"area": iso3})
+        country_list = []
+
+        for country in countries:
+            self.area_uri(country)
+            country_list.append(country)
+
+        if countries.count() > 0:
+            area["countries"] = country_list
 
     def area_error(self, area_code):
-        return error("Invalid Area Code: {}".format(area_code))
+        return error("Invalid Area Code: %s" % area_code)
 
-    def areas_where(self, predicate, area_ids=None):
-        pass
+    def area_uri(self, area):
+        field = "iso3" if area["iso3"] is not None else "name"
+        uri(url_root=self._url_root, element=area, element_code=field,
+            level="areas")

@@ -145,21 +145,23 @@ class Repository(object):
     """
     __metaclass__ = ABCMeta
 
-    def find_countries_by_code(self, area_code):
-        return self.areas_where(lambda area: True, area_code)
+    def find_countries_by_code_or_income(self, area_code_or_income):
+        pass
+
+    def find_countries_by_continent_or_income(self, continent_or_income):
+        pass
 
     def find_continents(self):
-        return self.areas_where(lambda area: True)
+        pass
 
     def find_countries(self):
-        return self.areas_where(lambda area: True)
+        pass
+
+    def set_continent_countries(self, area):
+        pass
 
     def area_error(self, area_code):
-        return self.areas_where(lambda area: True, area_code)
+        pass
 
-    @abstractmethod
-    def areas_where(self, predicate, area_ids=None):
-        """
-        Subclass implementations must override at least this method
-        """
-        raise NotImplementedError
+    def area_uri(self, area):
+        pass
