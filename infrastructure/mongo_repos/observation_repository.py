@@ -3,7 +3,7 @@ from webindex.domain.model.observation.observation import Repository
 from config import port, db_name, host
 from .mongo_connection import connect_to_db
 from .indicator_repository import IndicatorRepository
-from .response_status import success
+from .utils import success
 from .area_repository import AreaRepository
 
 
