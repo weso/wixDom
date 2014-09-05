@@ -3,8 +3,8 @@ from webindex.domain.model.observation.observation import Repository
 from config import port, db_name, host
 from .mongo_connection import connect_to_db
 from .indicator_repository import IndicatorRepository
-from .utils import success
 from .area_repository import AreaRepository
+from utils import success
 
 
 class ObservationRepository(Repository):
@@ -29,7 +29,7 @@ class ObservationRepository(Repository):
         if area_code is not None:
             area_filter = self.get_countries_by_code_name_or_income(area_code)
 
-            if area_filter is not None:
+            if area_filter is None:
                 return self._area.area_error(area_code)
 
             filters.append(area_filter)
@@ -62,7 +62,7 @@ class ObservationRepository(Repository):
             indicator = self._db['indicators'].find_one({"indicator": code})
 
             if indicator is None:
-                return self._indicator.indicator_error(code)
+                return None
 
         return {"indicator": {"$in": codes}}
 

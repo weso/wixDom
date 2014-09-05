@@ -2,7 +2,7 @@ __author__ = 'guillermo'
 from webindex.domain.model.indicator.indicator import Repository
 from config import port, db_name, host
 from .mongo_connection import connect_to_db
-from utils import error, uri
+from utils import error, success, uri
 
 
 class IndicatorRepository(Repository):
@@ -18,13 +18,21 @@ class IndicatorRepository(Repository):
         indicator = self._db['indicators'].find_one({"indicator": indicator_code})
 
         if indicator is None:
-            return None
+            return self.indicator_error(indicator_code)
 
         children = self.find_indicator_children(indicator_code)
         indicator["children"] = children
         self.indicator_uri(indicator)
 
-        return indicator
+        return success(indicator)
+
+    def find_indicators(self):
+        _index = self.find_indicators_index()["data"]
+        subindices = self.find_indicators_sub_indexes()["data"]
+        components = self.find_indicators_components()["data"]
+        indicators = self.find_indicators_indicators()["data"]
+
+        return success(_index + subindices + components + indicators)
 
     def find_indicators_index(self):
         return self.find_indicators_by_level("Index")
@@ -42,16 +50,16 @@ class IndicatorRepository(Repository):
         return self.find_indicators_by_level("Secondary", parent)
 
     def find_indicators_indicators(self, parent=None):
-        primary = self.find_indicators_primary(parent)
-        secondary = self.find_indicators_secondary(parent)
-        primary.append(secondary)
+        primary = self.find_indicators_primary(parent)["data"]
+        secondary = self.find_indicators_secondary(parent)["data"]
 
-        return primary
+        return success(primary + secondary)
 
     def find_indicators_by_level(self, level, parent=None):
         search = {"type": level}
 
         if parent is not None:
+            print parent
             code = parent["indicator"]
             _type = parent["type"].lower()
             _filter = {}
@@ -69,7 +77,7 @@ class IndicatorRepository(Repository):
             self.indicator_uri(indicator)
             processed_indicators.append(indicator)
 
-        return processed_indicators
+        return success(processed_indicators)
 
     def find_indicator_children(self, indicator):
         indicators = self._db["indicators"].find({"parent": indicator})

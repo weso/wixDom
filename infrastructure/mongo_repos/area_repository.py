@@ -2,7 +2,7 @@ __author__ = 'guillermo'
 from webindex.domain.model.area import region
 from config import port, db_name, host
 from .mongo_connection import connect_to_db
-from utils import error, uri
+from utils import error, success, uri
 
 
 class AreaRepository(region.Repository):
@@ -27,14 +27,14 @@ class AreaRepository(region.Repository):
             countries = self.find_countries_by_continent_or_income(
                 area_code_or_income_upper)
             if countries is None:
-                return None
+                return self.area_error(area_code_or_income)
             else:
-                return countries
+                return success(countries)
 
         self.set_continent_countries(area)
         self.area_uri(area)
 
-        return area
+        return success(area)
 
     def find_countries_by_continent_or_income(self, continent_or_income):
         continent_or_income_upper = continent_or_income.upper()
@@ -43,7 +43,7 @@ class AreaRepository(region.Repository):
             {"income": continent_or_income_upper}]})
 
         if countries.count() == 0:
-            return None
+            return self.area_error(continent_or_income)
 
         country_list = []
 
@@ -52,7 +52,13 @@ class AreaRepository(region.Repository):
             self.area_uri(country)
             country_list.append(country)
 
-        return country_list
+        return success(country_list)
+
+    def find_areas(self):
+        continents = self.find_continents()["data"]
+        countries = self.find_countries()["data"]
+
+        return success(continents + countries)
 
     def find_continents(self):
         areas = self._db['areas'].find({"area": None})
@@ -64,7 +70,7 @@ class AreaRepository(region.Repository):
             self.area_uri(continent)
             continents.append(continent)
 
-        return continents
+        return success(continents)
 
     def find_countries(self):
         countries = self._db['areas'].find({"area": {"$ne": None}})
@@ -74,7 +80,7 @@ class AreaRepository(region.Repository):
             self.area_uri(country)
             country_list.append(country)
 
-        return country_list
+        return success(country_list)
 
     def set_continent_countries(self, area):
         iso3 = area["iso3"]
