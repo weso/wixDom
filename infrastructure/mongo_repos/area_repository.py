@@ -36,11 +36,12 @@ class AreaRepository(region.Repository):
 
         return success(area)
 
-    def find_countries_by_continent_or_income(self, continent_or_income):
+    def find_countries_by_continent_or_income(self, continent_or_income, order):
+        order = "name" if order is None else order
         continent_or_income_upper = continent_or_income.upper()
         countries = self._db['areas'].find({"$or": [
             {"area": continent_or_income},
-            {"income": continent_or_income_upper}]})
+            {"income": continent_or_income_upper}]}).sort(order, 1)
 
         if countries.count() == 0:
             return self.area_error(continent_or_income)
@@ -54,14 +55,16 @@ class AreaRepository(region.Repository):
 
         return success(country_list)
 
-    def find_areas(self):
-        continents = self.find_continents()["data"]
-        countries = self.find_countries()["data"]
+    def find_areas(self, order):
+        order = "name" if order is None else order
+        continents = self.find_continents(order)["data"]
+        countries = self.find_countries(order)["data"]
 
         return success(continents + countries)
 
-    def find_continents(self):
-        areas = self._db['areas'].find({"area": None})
+    def find_continents(self, order):
+        order = "name" if order is None else order
+        areas = self._db['areas'].find({"area": None}).sort(order, 1)
         continents = []
 
         for continent in areas:
@@ -72,8 +75,9 @@ class AreaRepository(region.Repository):
 
         return success(continents)
 
-    def find_countries(self):
-        countries = self._db['areas'].find({"area": {"$ne": None}})
+    def find_countries(self, order):
+        order = "name" if order is None else order
+        countries = self._db['areas'].find({"area": {"$ne": None}}).sort(order, 1)
         country_list = []
 
         for country in countries:
@@ -84,7 +88,7 @@ class AreaRepository(region.Repository):
 
     def set_continent_countries(self, area):
         iso3 = area["iso3"]
-        countries = self._db['areas'].find({"area": iso3})
+        countries = self._db['areas'].find({"area": iso3}).sort("name", 1)
         country_list = []
 
         for country in countries:
