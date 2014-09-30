@@ -5,6 +5,7 @@ import uuid
 from webindex.domain.model.events import publish, DomainEvent
 from ..exceptions import ConstraintError, DiscardedEntityError
 from utility.mutators import mutate, when
+from abc import ABCMeta
 
 
 # =======================================================================================
@@ -203,4 +204,16 @@ def _(event, index):
     index._sub_index_ids.append(event.sub_index_id)
     index.increment_version()
     return index
+
+# =======================================================================================
+# Index Repository
+# =======================================================================================
+
+class Repository(object):
+
+    """Abstract implementation of generic queries for managing Index."""
+    __metaclass__ = ABCMeta
+
+    def insert_index(self, index):
+        pass
 

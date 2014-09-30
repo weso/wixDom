@@ -123,19 +123,6 @@ class ObservationRepository(Repository):
 
         return {"year": {"$in": year_list}}
 
-    def get_year_list(self):
-        years = self._db['observations'].distinct("year")
-        years.sort(reverse = True)
-
-        year_list = []
-
-        for year in years:
-            year_list.append({
-                "value": year
-            })
-
-        return success(year_list)
-
     def observation_uri(self, observation):
         indicator_code = observation["indicator"]
         area_code = observation["area"]

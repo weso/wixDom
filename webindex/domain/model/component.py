@@ -5,6 +5,7 @@ import uuid
 from webindex.domain.model.events import publish, DomainEvent
 from ..exceptions import ConstraintError, DiscardedEntityError
 from utility.mutators import mutate, when
+from abc import ABCMeta
 
 
 # =======================================================================================
@@ -220,3 +221,16 @@ def _(event, component):
     component._indicator_ids.append(event.indicator_id)
     component.increment_version()
     return component
+
+
+# =======================================================================================
+# Component Repository
+# =======================================================================================
+
+class Repository(object):
+
+    """Abstract implementation of generic queries for managing components."""
+    __metaclass__ = ABCMeta
+
+    def insert_component(self, component, subindex_name=None, index_name=None):
+        pass
