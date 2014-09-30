@@ -5,6 +5,8 @@ import uuid
 from webindex.domain.model.events import publish
 from utility.mutators import when, mutate
 from abc import ABCMeta
+from webindex.domain.model.events import DomainEvent
+from webindex.domain.model.indicator.organization import Organization
 
 
 # =======================================================================================
@@ -20,6 +22,9 @@ class Indicator(Entity):
     class Discarded(Entity.Discarded):
         pass
 
+    class OrganizationAdded(DomainEvent):
+        pass
+
     def __init__(self, event):
         super(Indicator, self).__init__(event.originator_id, event.originator_version)
         self._country_coverage = event.country_coverage
@@ -32,6 +37,7 @@ class Indicator(Entity):
         self._notation = event.notation
         self._interval_starts = event.interval_starts
         self._interval_ends = event.interval_ends
+        self._code = event.code
         self._organization = None
 
     def __repr__(self):
@@ -85,6 +91,17 @@ class Indicator(Entity):
             raise ValueError("Indicator's republish cannot be empty")
         self._republish = value
         self.increment_version()
+
+    @property
+    def code(self):
+        self._check_not_discarded()
+        return self._code
+
+    @code.setter
+    def code(self, value):
+        self._check_not_discarded()
+        if len(value) < 1:
+            raise ValueError("Indicator's code cannot be empty")
 
     @property
     def high_low(self):
@@ -207,23 +224,35 @@ class Indicator(Entity):
         mutate(self, event)
 
 
+    def add_organization(self, label=None):
+        self._check_not_discarded()
+        event = Indicator.OrganizationAdded(originator_id=self.id,
+                                            originator_version=self.version,
+                                            label=label)
+        self._apply(event)
+        publish(event)
+
+
 # =======================================================================================
 # Indicator aggregate root factory
 # =======================================================================================
 def create_indicator(_type=None, country_coverage=None, provider_link=None,
                      republish=None, high_low=None, label=None, comment=None,
                      notation=None, interval_starts=None, interval_ends=None,
-                     organization=None):
+                     code=None, organization=None):
     indicator_id = uuid.uuid4().hex[:24]
     event = Indicator.Created(originator_id=indicator_id, originator_version=0,
                               type=_type, country_coverage=country_coverage,
                               provider_link=provider_link, republish=republish,
                               high_low=high_low, label=label, comment=comment,
                               notation=notation, interval_starts=interval_starts,
-                              interval_ends=interval_ends, organization=organization)
+                              interval_ends=interval_ends, code=code,
+                              organization=organization)
     indicator = when(event)
     publish(event)
     return indicator
+
+
 
 
 # =======================================================================================
@@ -243,6 +272,22 @@ def _(event, indicator):
     indicator._discarded = True
     indicator.increment_version()
     return indicator
+
+@when.register(Indicator.OrganizationAdded)
+def _(event, indicator):
+    """
+    It creates a organization object for adding to the indicator object
+    :param event:
+    :return:
+    """
+
+    indicator.validate_event_originator(event)
+    organization = Organization(event.label)
+    indicator.organization = organization
+    indicator.increment_version()
+    return indicator
+
+
 
 
 # =======================================================================================
@@ -284,3 +329,7 @@ class Repository(object):
 
     def indicator_uri(self, indicator_code):
         pass
+
+    def insert_indicator(self, indicator, component_name=None, subindex_name=None, index_name=None):
+        pass
+
