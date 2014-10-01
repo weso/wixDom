@@ -139,3 +139,20 @@ class ObservationRepository(Repository):
 
         observation["indicator_name"] = indicator["name"]
         observation["area_name"] = area["name"]
+
+    def insert_observation(self, observation):
+        """
+        Expects an indicator_code and a iso3_code in ref_area and ref_indicator fo the observation object
+
+        :param observation:
+        :return:
+        """
+        observation_dict = {}
+        observation_dict['_id'] = observation.id
+        observation_dict['normalised'] = None  # TODO: Not yet added
+        observation_dict['area'] = observation.ref_area
+        observation_dict['indicator'] = observation.ref_indicator
+        observation_dict['value'] = observation.value
+        observation_dict['year'] = str(observation.ref_year)
+
+        self._db['observations'].insert(observation_dict)

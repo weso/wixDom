@@ -346,3 +346,6 @@ class Repository(object):
 
     def set_observation_country_and_indicator_name(self, observation):
         pass
+
+    def insert_observation(self, observation):
+        pass
