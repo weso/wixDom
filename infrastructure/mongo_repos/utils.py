@@ -20,3 +20,17 @@ def normalize_group_name(original):
         return None
     else:
         return original.upper().replace(" ", "_")
+
+def normalize_high_low(original):
+    """
+    Receive a word and try to remove white spaces and lower the chars.
+     The result must be "high" or "low"
+    :param original:
+    :return:
+    """
+
+    result = original.replace(" ","").lower()
+    if result not in ["high", "low"]:
+        raise ValueError("Only 'high' or 'low' allowed as content of the attribute 'high_low'")
+    else:
+        return result

@@ -2,7 +2,7 @@ __author__ = 'guillermo'
 from webindex.domain.model.indicator.indicator import Repository
 from config import port, db_name, host
 from .mongo_connection import connect_to_db
-from utils import error, success, uri, normalize_group_name
+from utils import error, success, uri, normalize_group_name, normalize_high_low
 
 
 class IndicatorRepository(Repository):
@@ -110,9 +110,9 @@ class IndicatorRepository(Repository):
         indicator_dict["description"] = indicator.comment
         indicator_dict["type"] = indicator.ind_type
         indicator_dict["parent"] = normalize_group_name(component_name)
+        indicator_dict["high_low"] = normalize_high_low(indicator.high_low)
 
 
         self._db['indicators'].insert(indicator_dict)
-        pass
 
 
