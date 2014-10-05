@@ -52,6 +52,7 @@ class ObservationRepository(Repository):
             self.set_observation_country_and_indicator_name(observation)
             observation_list.append(observation)
             # Extra info
+            observation["code"] = observation["area"]
             observation["name"] = observation["area_name"]
             observation["values"] = [ observation["value"] ]
 
