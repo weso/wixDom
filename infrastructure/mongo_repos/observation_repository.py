@@ -51,6 +51,9 @@ class ObservationRepository(Repository):
             self.observation_uri(observation)
             self.set_observation_country_and_indicator_name(observation)
             observation_list.append(observation)
+            # Extra info
+            observation["name"] = observation["area_name"]
+            observation["values"] = [ observation["value"] ]
 
         return success(observation_list)
 
