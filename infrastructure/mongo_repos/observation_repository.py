@@ -136,6 +136,12 @@ class ObservationRepository(Repository):
 
         return success(year_list)
 
+    def get_year_array(self):
+        years = self._db['observations'].distinct("year")
+        years.sort(reverse = True)
+
+        return success(years)
+
     def observation_uri(self, observation):
         indicator_code = observation["indicator"]
         area_code = observation["area"]
