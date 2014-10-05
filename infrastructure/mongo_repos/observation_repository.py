@@ -26,7 +26,7 @@ class ObservationRepository(Repository):
 
             filters.append(indicator_filter)
 
-        if area_code is not None:
+        if area_code is not None and area_code != "ALL":
             area_filter = self.get_countries_by_code_name_or_income(area_code)
 
             if area_filter is None:
