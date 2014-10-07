@@ -23,7 +23,7 @@ class ComponentRepository(Repository):
         component_dict['indicator'] = None
         component_dict['name'] = component.label
         component_dict['description'] = None
-        component_dict['_type'] = component.type
+        component_dict['type'] = component.type
         component_dict['parent'] = normalize_group_name(subindex_name)
 
         self._db['indicators'].insert(component_dict)  # This is OK. it will be stored in "indicators"
