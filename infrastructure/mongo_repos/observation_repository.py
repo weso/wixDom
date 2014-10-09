@@ -19,6 +19,8 @@ class ObservationRepository(Repository):
 
         secondVisualisation = None
 
+        queryCountries = "ALL"
+
         # Set continent info
         if observations["success"] and area_code == "ALL":
             secondVisualisation = list(observations["data"])
@@ -34,7 +36,10 @@ class ObservationRepository(Repository):
 
         # Country visualisations
         if observations["success"] and area_code is not None and area_code != "ALL":
-            areas = self.get_countries_by_code_name_or_income(area_code)["areas"]
+            areas = self.get_countries_by_code_name_or_income(area_code)
+
+            queryCountries = areas["countries"]
+            areas = areas["areas"]
 
             if areas is None:
                 return self._area.area_error(area_code)
@@ -64,7 +69,9 @@ class ObservationRepository(Repository):
                 index = 0
                 right = 0
                 left = 0
+                top = len(data2) - 1
 
+                # data is completed with countries of the region (higher and lower)
                 while len(data1) < maxBars:
                     if index % 2 == 0:
                         if data2[right]:
@@ -72,9 +79,10 @@ class ObservationRepository(Repository):
                                 data1.append(data2[right])
                             right += 1
                     else:
-                        if data2[left]:
-                            if data2[left] not in data1:
-                                data1.append(data2[left])
+                        pos = top - left
+                        if data2[pos]:
+                            if data2[pos] not in data1:
+                                data1.append(data2[pos])
                             left += 1
 
                     index += 1
@@ -128,6 +136,14 @@ class ObservationRepository(Repository):
         lower = observations["data"][length - 1] if length > 0 else ""
 
         if barChart["success"] and observations["success"]:
+            # set selected countries
+            for observation in barChart["data"]:
+                if queryCountries == "ALL":
+                   observation["selected"] = True
+                else:
+                    code = observation["code"]
+                    observation["selected"] = code in queryCountries
+
             observations["data"] = {
                 "observations": observations["data"],
                 "bars": barChart["data"],
@@ -236,7 +252,8 @@ class ObservationRepository(Repository):
 
         return {
             "area_filter": {"area": {"$in": country_codes}},
-            "areas": areas
+            "areas": areas,
+            "countries": country_codes
         }
 
     def get_years(self, year):
