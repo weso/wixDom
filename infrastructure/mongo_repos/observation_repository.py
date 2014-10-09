@@ -62,9 +62,12 @@ class ObservationRepository(Repository):
                 data1 = observations["data"]
                 data2 = regionObservations["data"]
 
+                processedCountries = []
+
                 # Set selected field
                 for observation in data1:
                     observation["selected"] = True
+                    processedCountries.append(observation["code"])
 
                 index = 0
                 right = 0
@@ -75,14 +78,16 @@ class ObservationRepository(Repository):
                 while len(data1) < maxBars:
                     if index % 2 == 0:
                         if data2[right]:
-                            if data2[right] not in data1:
+                            if data2[right]["code"] not in processedCountries:
                                 data1.append(data2[right])
+                                processedCountries.append(data2[right]["code"])
                             right += 1
                     else:
                         pos = top - left
                         if data2[pos]:
-                            if data2[pos] not in data1:
+                            if data2[pos]["code"] not in processedCountries:
                                 data1.append(data2[pos])
+                                processedCountries.append(data2[pos]["code"])
                             left += 1
 
                     index += 1
@@ -348,6 +353,7 @@ class ObservationRepository(Repository):
             if country not in grouped_by_country:
                 grouped_by_country[country] = {
                     "name": country_name,
+                    "code": country,
                     "observations": {}
                 }
 
@@ -367,6 +373,7 @@ class ObservationRepository(Repository):
 
             series.append({
                 "name": grouped_by_country[country]["name"],
+                "code": grouped_by_country[country]["code"],
                 "values": values
             })
 
