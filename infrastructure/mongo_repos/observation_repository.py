@@ -14,6 +14,128 @@ class ObservationRepository(Repository):
         self._area = AreaRepository(url_root=url_root)
         self._url_root = url_root
 
+    def find_visualisations(self, indicator_code=None, area_code=None, year=None, maxBars=7):
+        observations = self.find_observations(indicator_code, area_code, year)
+
+        secondVisualisation = None
+
+        # Set continent info
+        if observations["success"] and area_code == "ALL":
+            secondVisualisation = list(observations["data"])
+
+            for observation in secondVisualisation:
+                area = observation["area"]
+                area = self._db["areas"].find({ "iso3": area })
+
+                for element in area:
+                    observation["continent"] = element["area"]
+                    # We set ISO3 AS name
+                    observation["name"] = element["iso3"]
+
+        # Country visualisations
+        if observations["success"] and area_code is not None and area_code != "ALL":
+            areas = self.get_countries_by_code_name_or_income(area_code)["areas"]
+
+            if areas is None:
+                return self._area.area_error(area_code)
+
+            previousRegion = areas[0]
+            sameRegion = True
+
+            for area in areas:
+                if area != previousRegion:
+                    sameRegion = False
+                    break
+                previousRegion = area
+
+            region = previousRegion if sameRegion else "ALL"
+
+            regionObservations = self.find_observations(indicator_code, region, year)
+
+            # Several countries bar chart
+            if regionObservations["success"]:
+                data1 = observations["data"]
+                data2 = regionObservations["data"]
+
+                index = 0
+                right = 0
+                left = 0
+
+                while len(data1) < maxBars:
+                    if index % 2 == 0:
+                        if data2[right]:
+                            if data2[right] not in data1:
+                                data1.append(data2[right])
+                            right += 1
+                    else:
+                        if data2[left]:
+                            if data2[left] not in data1:
+                                data1.append(data2[left])
+                            left += 1
+
+                    index += 1
+
+                def sort_by_value(a, b):
+                    return cmp(b["value"], a["value"])
+
+                data1.sort(sort_by_value)
+
+                for observation in data1:
+                    observation["value"] = round(observation["value"], 2)
+
+                # Several countries line chart
+
+                # Get selected countries from previous query
+                selectedCountries = ""
+
+                for observation in data1:
+                    country = observation["area"]
+
+                    if selectedCountries != "":
+                        selectedCountries += ","
+
+                    selectedCountries += country
+
+                timeObservations = self.find_observations(indicator_code, selectedCountries, None)
+                if timeObservations["success"]:
+                    secondVisualisation = self.group_observations_by_country(timeObservations["data"])
+
+        # Ranking bar chart and general (ALL) map
+        barChart = self.find_observations(indicator_code, "ALL", year)
+
+        # mean and median
+        mean = 0
+        median = []
+
+        for observation in observations["data"]:
+            value = observation["value"]
+            mean += value
+            median.append(value)
+
+        length = len(observations["data"])
+        mean = 0 if length <= 0 else mean / length
+        median = self.getMedian(median)
+
+        mean = round(mean, 2)
+        median = round(median, 2)
+
+        # higher and lower
+        higher = observations["data"][0] if length > 0 else ""
+        lower = observations["data"][length - 1] if length > 0 else ""
+
+        if barChart["success"] and observations["success"]:
+            observations["data"] = {
+                "observations": observations["data"],
+                "bars": barChart["data"],
+                "secondVisualisation": secondVisualisation,
+                "mean": mean,
+                "median": median,
+                "higher": higher,
+                "lower": lower
+            }
+
+        return observations
+
     def find_observations(self, indicator_code=None, area_code=None, year=None):
         filters = []
 
@@ -27,7 +149,7 @@ class ObservationRepository(Repository):
             filters.append(indicator_filter)
 
         if area_code is not None and area_code != "ALL":
-            area_filter = self.get_countries_by_code_name_or_income(area_code)
+            area_filter = self.get_countries_by_code_name_or_income(area_code)["area_filter"]
 
             if area_filter is None:
                 return self._area.area_error(area_code)
@@ -44,7 +166,7 @@ class ObservationRepository(Repository):
         if len(filters) > 0:
             search = {"$and": filters}
 
-        observations = self._db["observations"].find(search)
+        observations = self._db["observations"].find(search).sort("value", -1)
         observation_list = []
 
         for observation in observations:
@@ -54,7 +176,7 @@ class ObservationRepository(Repository):
             # Extra info
             observation["code"] = observation["area"]
             observation["name"] = observation["area_name"]
-            observation["values"] = [ observation["value"] ]
+            observation["values"] = [ round(observation["value"], 2) ]
 
         return success(observation_list)
 
@@ -74,12 +196,13 @@ class ObservationRepository(Repository):
         codes = code.split(",")
 
         country_codes = []
+        areas = []
 
         for code in codes:
             code_upper = code.upper()
 
             # by ISO3
-            countries = self._db["areas"].find({"iso3": code_upper})
+            countries = self._db["areas"].find({ "$and": [{"iso3": code_upper}, { "area": { "$ne": None } }] })
 
             # by ISO2
             if countries is None or countries.count() == 0:
@@ -104,8 +227,13 @@ class ObservationRepository(Repository):
             for country in countries:
                 iso3 = country["iso3"]
                 country_codes.append(iso3)
+                area = country["area"]
+                areas.append(area)
 
-        return {"area": {"$in": country_codes}}
+        return {
+            "area_filter": {"area": {"$in": country_codes}},
+            "areas": areas
+        }
 
     def get_years(self, year):
         if year is None:
@@ -182,3 +310,56 @@ class ObservationRepository(Repository):
         observation_dict['year'] = str(year_literal)
 
         self._db['observations'].insert(observation_dict)
+
+    def group_observations_by_country(self, observations):
+        years = []
+
+        grouped_by_country = {}
+
+        for observation in observations:
+            country = observation["area"]
+            country_name = observation["area_name"]
+            year = observation["year"]
+
+            if year not in years:
+                years.append(year)
+
+            if country not in grouped_by_country:
+                grouped_by_country[country] = {
+                    "name": country_name,
+                    "observations": {}
+                }
+
+            grouped_by_country[country]["observations"][year] = observation
+
+        years.sort()
+        series = []
+
+        for country in grouped_by_country:
+            values = []
+
+            for year in years:
+                observation = grouped_by_country[country]["observations"][year] if grouped_by_country[country]["observations"][year] else None
+                value = observation["value"] if observation else None
+                value = round(value, 2) if value else None
+                values.append(value)
+
+            series.append({
+                "name": grouped_by_country[country]["name"],
+                "values": values
+            })
+
+        return {
+            "series": series,
+            "years": years
+        }
+
+    def getMedian(self, numericValues):
+        theValues = sorted(numericValues)
+
+        if len(theValues) % 2 == 1:
+            return theValues[(len(theValues)+1)/2-1]
+        else:
+            lower = theValues[len(theValues)/2-1]
+            upper = theValues[len(theValues)/2]
+            return (float(lower + upper)) / 2
