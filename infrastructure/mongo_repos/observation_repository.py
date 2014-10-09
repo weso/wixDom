@@ -16,6 +16,11 @@ class ObservationRepository(Repository):
 
     def find_visualisations(self, indicator_code=None, area_code=None, year=None, maxBars=7):
         observations = self.find_observations(indicator_code, area_code, year)
+        all_years = self.find_observations(indicator_code, area_code)["data"]
+
+        observationsByCountry = self.group_observations_by_country(all_years)
+        byCountry = observationsByCountry["byCountry"]
+        years = observationsByCountry["years"]
 
         secondVisualisation = None
 
@@ -31,6 +36,7 @@ class ObservationRepository(Repository):
 
                 for element in area:
                     observation["continent"] = element["area"]
+                    observation["value"] = round(observation["value"], 2)
                     # We set ISO3 AS name
                     observation["name"] = element["iso3"]
 
@@ -61,6 +67,9 @@ class ObservationRepository(Repository):
             if regionObservations["success"]:
                 data1 = observations["data"]
                 data2 = regionObservations["data"]
+
+                if len(data2) < maxBars - len(data1):
+                    data2 = data2 + self.find_observations(indicator_code, "ALL", year)["data"]
 
                 processedCountries = []
 
@@ -114,8 +123,11 @@ class ObservationRepository(Repository):
                     selectedCountries += country
 
                 timeObservations = self.find_observations(indicator_code, selectedCountries, None)
+
                 if timeObservations["success"]:
                     secondVisualisation = self.group_observations_by_country(timeObservations["data"])
+                    byCountry = secondVisualisation["byCountry"]
+                    years = secondVisualisation["years"]
 
         # Ranking bar chart and general (ALL) map
         barChart = self.find_observations(indicator_code, "ALL", year)
@@ -156,7 +168,9 @@ class ObservationRepository(Repository):
                 "mean": mean,
                 "median": median,
                 "higher": higher,
-                "lower": lower
+                "lower": lower,
+                "byCountry": byCountry,
+                "years": years
             }
 
         return observations
@@ -202,6 +216,7 @@ class ObservationRepository(Repository):
             observation["code"] = observation["area"]
             observation["name"] = observation["area_name"]
             observation["values"] = [ round(observation["value"], 2) ]
+            observation["previous-value"] = self.get_previous_value(observation)
 
         return success(observation_list)
 
@@ -272,10 +287,10 @@ class ObservationRepository(Repository):
         for year in years:
             interval = year.split("-")
 
-            if len(interval) == 1 and interval[0].isnumeric():
+            if len(interval) == 1 and interval[0].isdigit():
                 year_list.append(interval[0])
-            elif len(interval) == 2 and interval[0].isnumeric() and interval[
-                1].isnumeric():
+            elif len(interval) == 2 and interval[0].isdigit() and interval[
+                1].isdigit():
                 for i in range(int(interval[0]), int(interval[1]) + 1):
                     year_list.append(str(i))
 
@@ -361,6 +376,7 @@ class ObservationRepository(Repository):
 
         years.sort()
         series = []
+        byCountry = {}
 
         for country in grouped_by_country:
             values = []
@@ -371,15 +387,22 @@ class ObservationRepository(Repository):
                 value = round(value, 2) if value else None
                 values.append(value)
 
-            series.append({
+            code = grouped_by_country[country]["code"]
+
+            serie = {
                 "name": grouped_by_country[country]["name"],
-                "code": grouped_by_country[country]["code"],
+                "code": code,
                 "values": values
-            })
+            }
+
+            series.append(serie)
+
+            byCountry[code] = serie
 
         return {
             "series": series,
-            "years": years
+            "years": years,
+            "byCountry": byCountry
         }
 
     def getMedian(self, numericValues):
@@ -391,3 +414,42 @@ class ObservationRepository(Repository):
             lower = theValues[len(theValues)/2-1]
             upper = theValues[len(theValues)/2]
             return (float(lower + upper)) / 2
+
+    def get_previous_value(self, observation):
+        country = observation["area"]
+        indicator = observation["indicator"]
+        year = observation["year"]
+        value = float(observation["value"])
+        previousYear = str(int(year) - 1)
+
+        filter = { "$and": [
+            {
+                "area": country
+            },
+            {
+                "indicator": indicator
+            },
+            {
+                "year": previousYear
+            }
+        ]}
+
+        previousObservation = indicator = self._db["observations"].find_one(filter)
+
+        if previousObservation:
+            previousValue = float(previousObservation["value"])
+
+            tendency = 0
+
+            if value > previousValue:
+                tendency = 1
+
+            if value < previousValue:
+                tendency = -1
+
+            return {
+                "value": previousObservation["value"],
+                "tendency": tendency
+            }
+
+        return None
