@@ -1,13 +1,17 @@
 __author__ = 'guillermo'
 
+
 def success(data):
     return {"success": True, "data": data}
+
 
 def error(text=""):
     return {"success": False, "error": text}
 
+
 def uri(element, element_code, level, url_root=None):
     element["uri"] = "%s%s/%s" % (url_root, level, element[element_code])
+
 
 def normalize_group_name(original):
     """
@@ -19,7 +23,11 @@ def normalize_group_name(original):
     if original is None:
         return None
     else:
-        return original.upper().replace(" ", "_")
+        result = original.upper().replace(" ", "_").replace("-", "_")
+        while "__" in result:
+            result.replace("__", "_")
+        return result
+
 
 def normalize_high_low(original):
     """
@@ -29,7 +37,7 @@ def normalize_high_low(original):
     :return:
     """
 
-    result = original.replace(" ","").lower()
+    result = original.replace(" ", "").lower()
     if result not in ["high", "low"]:
         raise ValueError("Only 'high' or 'low' allowed as content of the attribute 'high_low'")
     else:
