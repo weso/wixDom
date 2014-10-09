@@ -57,6 +57,10 @@ class ObservationRepository(Repository):
                 data1 = observations["data"]
                 data2 = regionObservations["data"]
 
+                # Set selected field
+                for observation in data1:
+                    observation["selected"] = True
+
                 index = 0
                 right = 0
                 left = 0
