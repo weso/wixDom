@@ -83,21 +83,31 @@ class ObservationRepository(Repository):
                 left = 0
                 top = len(data2) - 1
 
+                right_stopped = False
+                left_stopped = False
+
                 # data is completed with countries of the region (higher and lower)
                 while len(data1) < maxBars:
+                    if right_stopped and left_stopped:
+                        break;
+
                     if index % 2 == 0:
-                        if data2[right]:
+                        if right < len(data2):
                             if data2[right]["code"] not in processedCountries:
                                 data1.append(data2[right])
                                 processedCountries.append(data2[right]["code"])
                             right += 1
+                        else:
+                            right_stopped = True
                     else:
                         pos = top - left
-                        if data2[pos]:
+                        if pos >= 0 and pos < len(data2):
                             if data2[pos]["code"] not in processedCountries:
                                 data1.append(data2[pos])
                                 processedCountries.append(data2[pos]["code"])
                             left += 1
+                        else:
+                            left_stopped = True
 
                     index += 1
 
@@ -188,7 +198,10 @@ class ObservationRepository(Repository):
             filters.append(indicator_filter)
 
         if area_code is not None and area_code != "ALL":
-            area_filter = self.get_countries_by_code_name_or_income(area_code)["area_filter"]
+            area_filter = self.get_countries_by_code_name_or_income(area_code)
+
+            if area_filter is not None:
+                area_filter = area_filter["area_filter"]
 
             if area_filter is None:
                 return self._area.area_error(area_code)
@@ -408,10 +421,12 @@ class ObservationRepository(Repository):
     def getMedian(self, numericValues):
         theValues = sorted(numericValues)
 
-        if len(theValues) % 2 == 1:
-            return theValues[(len(theValues)+1)/2-1]
+        if len(theValues) == 0:
+            return 0
+        elif len(theValues) % 2 == 1:
+            return theValues[(len(theValues)+1)/2 - 1]
         else:
-            lower = theValues[len(theValues)/2-1]
+            lower = theValues[len(theValues)/2 - 1]
             upper = theValues[len(theValues)/2]
             return (float(lower + upper)) / 2
 
