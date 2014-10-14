@@ -364,7 +364,7 @@ class ObservationRepository(Repository):
         observation_dict['indicator'] = indicator_code
         observation_dict['indicator_name'] = indicator_name
         observation_dict['value'] = observation.value
-        observation_dict['year'] = str(year_literal)
+        observation_dict['year'] = str(observation.ref_year.value)
         observation_dict['values'] = [observation.value]  # An array of one element
         observation_dict['uri'] = observation_uri
         observation_dict['previous_value'] = self._build_previous_value_object(previous_value, year_of_previous_value)
