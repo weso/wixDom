@@ -330,6 +330,6 @@ class Repository(object):
     def indicator_uri(self, indicator_code):
         pass
 
-    def insert_indicator(self, indicator, component_name=None, subindex_name=None, index_name=None):
+    def insert_indicator(self, indicator, component_name=None, subindex_name=None, index_name=None, weight=None):
         pass
 

@@ -99,7 +99,7 @@ class IndicatorRepository(Repository):
         uri(url_root=self._url_root, element=indicator_code,
             element_code="indicator", level="indicators")
 
-    def insert_indicator(self, indicator, component_name=None, subindex_name=None, index_name=None):
+    def insert_indicator(self, indicator, component_name=None, subindex_name=None, index_name=None, weight=None):
         indicator_dict = {}
         indicator_dict["_id"] = indicator.id
         indicator_dict["index"] = normalize_group_name(index_name)
@@ -111,6 +111,7 @@ class IndicatorRepository(Repository):
         indicator_dict["type"] = indicator.ind_type
         indicator_dict["parent"] = normalize_group_name(component_name)
         indicator_dict["high_low"] = normalize_high_low(indicator.high_low)
+        indicator_dict['weight'] = weight
 
 
         self._db['indicators'].insert(indicator_dict)
