@@ -99,7 +99,7 @@ class IndicatorRepository(Repository):
         uri(url_root=self._url_root, element=indicator_code,
             element_code="indicator", level="indicators")
 
-    def insert_indicator(self, indicator, ind_uri, component_name=None, subindex_name=None, index_name=None, weight=None):
+    def insert_indicator(self, indicator, indicator_uri=None, component_name=None, subindex_name=None, index_name=None, weight=None):
         indicator_dict = {}
         indicator_dict["_id"] = indicator.id
         indicator_dict["index"] = normalize_group_name(index_name)

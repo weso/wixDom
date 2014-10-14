@@ -14,7 +14,7 @@ class IndexRepository(Repository):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
-    def insert_index(self, index, index_uri):
+    def insert_index(self, index, index_uri=None):
         index_dict = {}
         index_dict['_id'] = index.id
         index_dict["index"] = normalize_group_name(index.label)

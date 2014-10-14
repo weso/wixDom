@@ -14,7 +14,7 @@ class ComponentRepository(Repository):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
-    def insert_component(self, component, comp_uri, subindex_name=None, index_name=None):
+    def insert_component(self, component, component_uri=None, subindex_name=None, index_name=None):
         component_dict = {}
         component_dict['_id'] = component.id
         component_dict['index'] = normalize_group_name(index_name)
