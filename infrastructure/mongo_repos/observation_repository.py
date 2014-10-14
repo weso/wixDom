@@ -345,7 +345,8 @@ class ObservationRepository(Repository):
         observation["indicator_name"] = indicator["name"]
         observation["area_name"] = area["name"]
 
-    def insert_observation(self, observation, area_iso3_code=None, indicator_code=None, year_literal=None):
+    def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None, year_literal=None,
+                           area_name=None, indicator_name=None, previous_value=None, year_of_previous_value=None):
         """
         It takes the info of indicator, area and year through the optional params area_iso3_code,
         indicator_code and year_literal
@@ -359,11 +360,26 @@ class ObservationRepository(Repository):
         observation_dict['_id'] = observation.id
         observation_dict['normalised'] = None  # TODO: Not yet added
         observation_dict['area'] = area_iso3_code
+        observation_dict['area_name'] = area_name
         observation_dict['indicator'] = indicator_code
+        observation_dict['indicator_name'] = indicator_name
         observation_dict['value'] = observation.value
         observation_dict['year'] = str(year_literal)
+        observation_dict['values'] = [observation.value]  # An array of one element
+        observation_dict['uri'] = observation_uri
+        observation_dict['previous_value'] = self._build_previous_value_object(previous_value, year_of_previous_value)
 
         self._db['observations'].insert(observation_dict)
+
+
+    @staticmethod
+    def _build_previous_value_object(value, year):
+        if value is None or year is None:
+            return None
+        else:
+            return {'value': value, 'year': str(year)}
+
+
 
     def group_observations_by_country(self, observations):
         years = []

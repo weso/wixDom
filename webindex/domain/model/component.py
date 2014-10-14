@@ -232,5 +232,5 @@ class Repository(object):
     """Abstract implementation of generic queries for managing components."""
     __metaclass__ = ABCMeta
 
-    def insert_component(self, component, comp_uri, subindex_name=None, index_name=None):
+    def insert_component(self, component, component_uri=None, subindex_name=None, index_name=None):
         pass

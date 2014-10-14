@@ -347,15 +347,22 @@ class Repository(object):
     def set_observation_country_and_indicator_name(self, observation):
         pass
 
-    def insert_observation(self, observation, area_iso3_code=None, indicator_code=None, year_literal=None):
+    def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
+                           year_literal=None, area_name=None, indicator_name=None, previous_value=None,
+                           year_of_previous_value=None):
         """
         The info related to area, indicator and year could be provided using the observation
         object internal fields or, in some context, directly using the parameters
         area_iso3_code, indicator_code and year literal. Each implementation will choose
         :param observation: observation object of the model
+        :param uri: uri generated according to some parameters that represents the entity
         :param area_iso3_code:  iso3_code of a country
         :param indicator_code: code of an indicator (not id)
         :param year_literal: inst/string year, not an object year of the model
+        :param area_name: String containing the name of the country
+        :param indicator_name: String containing the name of the indicator
+        :param previous_value: numeric value of previous observation in time registered
+        :param year_of_previous_value: year of the previous observation registered
         :return:
         """
         pass

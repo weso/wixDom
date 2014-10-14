@@ -14,7 +14,7 @@ class SubindexRepository(Repository):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
-    def insert_subindex(self, subindex, subindex_uri, index_name=None):
+    def insert_subindex(self, subindex, subindex_uri=None, index_name=None):
         subindex_dict = {}
         subindex_dict["_id"] = subindex.id
         subindex_dict["index"] = normalize_group_name(index_name)
