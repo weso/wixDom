@@ -112,7 +112,7 @@ class IndicatorRepository(Repository):
         indicator_dict["parent"] = normalize_group_name(component_name)
         indicator_dict["high_low"] = normalize_high_low(indicator.high_low)
         indicator_dict['weight'] = weight
-        indicator_dict['uri'] = ind_uri
+        indicator_dict['uri'] = indicator_uri
 
 
         self._db['indicators'].insert(indicator_dict)

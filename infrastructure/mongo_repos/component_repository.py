@@ -25,7 +25,7 @@ class ComponentRepository(Repository):
         component_dict['description'] = None
         component_dict['type'] = component.type
         component_dict['parent'] = normalize_group_name(subindex_name)
-        component_dict['uri'] = comp_uri
+        component_dict['uri'] = component_uri
 
         self._db['indicators'].insert(component_dict)  # This is OK. it will be stored in "indicators"
 
