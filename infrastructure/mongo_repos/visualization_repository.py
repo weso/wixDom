@@ -47,8 +47,7 @@ class VisualizationRepository(object):
 
         result = []
         for i in range(self._FIRST_YEAR, self._LAST_YEAR + 1):
-            result.append(self._look_for_a_value_for_a_year(self._FIRST_YEAR + 1,
-                                                            observations))  # The method could return None. NP =)
+            result.append(self._look_for_a_value_for_a_year(i, observations))  # The method could return None. NP =)
         return result
 
 
