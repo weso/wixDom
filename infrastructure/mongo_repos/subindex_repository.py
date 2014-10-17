@@ -14,7 +14,7 @@ class SubindexRepository(Repository):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
-    def insert_subindex(self, subindex, subindex_uri=None, index_name=None):
+    def insert_subindex(self, subindex, subindex_uri=None, index_name=None, weight=None):
         subindex_dict = {}
         subindex_dict["_id"] = subindex.id
         subindex_dict["index"] = normalize_group_name(index_name)
@@ -26,5 +26,6 @@ class SubindexRepository(Repository):
         subindex_dict['type'] = subindex.type
         subindex_dict['parent'] = normalize_group_name(index_name)
         subindex_dict['uri'] = subindex_uri
+        subindex_dict['weight'] = weight
 
         self._db['indicators'].insert(subindex_dict)

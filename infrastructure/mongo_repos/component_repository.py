@@ -14,7 +14,7 @@ class ComponentRepository(Repository):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
-    def insert_component(self, component, component_uri=None, subindex_name=None, index_name=None):
+    def insert_component(self, component, component_uri=None, subindex_name=None, index_name=None, weight=None):
         component_dict = {}
         component_dict['_id'] = component.id
         component_dict['index'] = normalize_group_name(index_name)
@@ -26,6 +26,7 @@ class ComponentRepository(Repository):
         component_dict['type'] = component.type
         component_dict['parent'] = normalize_group_name(subindex_name)
         component_dict['uri'] = component_uri
+        component_dict['weight'] = weight
 
         self._db['indicators'].insert(component_dict)  # This is OK. it will be stored in "indicators"
 

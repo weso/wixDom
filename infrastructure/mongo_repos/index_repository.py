@@ -26,5 +26,6 @@ class IndexRepository(Repository):
         index_dict['type'] = index.type
         index_dict['parent'] = None
         index_dict['uri'] = index_uri
+        index_dict['weight'] = 1
 
         self._db['indicators'].insert(index_dict)
