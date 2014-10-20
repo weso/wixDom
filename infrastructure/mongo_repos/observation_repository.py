@@ -347,7 +347,7 @@ class ObservationRepository(Repository):
 
     def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
                            year_literal=None, area_name=None, indicator_name=None, previous_value=None,
-                           year_of_previous_value=None):
+                           year_of_previous_value=None, republish=None):
         """
         It takes the info of indicator, area and year through the optional params area_iso3_code,
         indicator_code and year_literal
@@ -369,6 +369,7 @@ class ObservationRepository(Repository):
         observation_dict['values'] = [observation.value]  # An array of one element
         observation_dict['uri'] = observation_uri
         observation_dict['previous_value'] = self._build_previous_value_object(previous_value, year_of_previous_value)
+        observation_dict['republish'] = republish
 
         self._db['observations'].insert(observation_dict)
 

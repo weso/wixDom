@@ -27,5 +27,6 @@ class SubindexRepository(Repository):
         subindex_dict['parent'] = normalize_group_name(index_name)
         subindex_dict['uri'] = subindex_uri
         subindex_dict['weight'] = weight
+        subindex_dict['republish'] = True
 
         self._db['indicators'].insert(subindex_dict)
