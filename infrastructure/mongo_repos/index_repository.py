@@ -17,10 +17,10 @@ class IndexRepository(Repository):
     def insert_index(self, index, index_uri=None):
         index_dict = {}
         index_dict['_id'] = index.id
-        index_dict["index"] = normalize_group_name(index.label)
+        index_dict["index"] = None
         index_dict['subindex'] = None
         index_dict['component'] = None
-        index_dict['indicator'] = None
+        index_dict['indicator'] = normalize_group_name(index.label)
         index_dict['name'] = index.label
         index_dict['description'] = None
         index_dict['type'] = index.type
