@@ -19,8 +19,8 @@ class ComponentRepository(Repository):
         component_dict['_id'] = component.id
         component_dict['index'] = normalize_group_name(index_name)
         component_dict['subindex'] = normalize_group_name(subindex_name)
-        component_dict['component'] = normalize_group_name(component.label)
-        component_dict['indicator'] = None
+        component_dict['component'] = None
+        component_dict['indicator'] = normalize_group_name(component.label)
         component_dict['name'] = component.label
         component_dict['description'] = None
         component_dict['type'] = component.type

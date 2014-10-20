@@ -19,8 +19,8 @@ class SubindexRepository(Repository):
         subindex_dict["_id"] = subindex.id
         subindex_dict["index"] = normalize_group_name(index_name)
         subindex_dict['component'] = None
-        subindex_dict['subindex'] = normalize_group_name(subindex.label)
-        subindex_dict['indicator'] = None
+        subindex_dict['subindex'] = None
+        subindex_dict['indicator'] = normalize_group_name(subindex.label)
         subindex_dict['name'] = subindex.label
         subindex_dict['description'] = None
         subindex_dict['type'] = subindex.type

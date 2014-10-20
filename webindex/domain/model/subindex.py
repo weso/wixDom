@@ -27,7 +27,7 @@ class SubIndex(Entity):
         super(SubIndex, self).__init__(event.originator_id, event.originator_version)
         self._order = event.order
         self._colour = event.colour
-        self._type = "SubIndex"
+        self._type = "Subindex"
         self._label = event.label
         self._notation = event.notation
         self._component_ids = []
