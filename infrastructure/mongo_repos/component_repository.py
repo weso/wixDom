@@ -27,6 +27,7 @@ class ComponentRepository(Repository):
         component_dict['parent'] = normalize_group_name(subindex_name)
         component_dict['uri'] = component_uri
         component_dict['weight'] = weight
+        component_dict['republish'] = True
 
         self._db['indicators'].insert(component_dict)  # This is OK. it will be stored in "indicators"
 

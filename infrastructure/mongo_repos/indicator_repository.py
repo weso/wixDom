@@ -113,6 +113,7 @@ class IndicatorRepository(Repository):
         indicator_dict["high_low"] = normalize_high_low(indicator.high_low)
         indicator_dict['weight'] = weight
         indicator_dict['uri'] = indicator_uri
+        indicator_dict['republish'] = indicator.republish
 
 
         self._db['indicators'].insert(indicator_dict)

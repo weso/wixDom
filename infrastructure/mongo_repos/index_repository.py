@@ -27,5 +27,6 @@ class IndexRepository(Repository):
         index_dict['parent'] = None
         index_dict['uri'] = index_uri
         index_dict['weight'] = 1
+        index_dict['republish'] = True
 
         self._db['indicators'].insert(index_dict)
