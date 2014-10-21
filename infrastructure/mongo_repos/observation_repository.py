@@ -4,7 +4,7 @@ from config import port, db_name, host
 from .mongo_connection import connect_to_db
 from .indicator_repository import IndicatorRepository
 from .area_repository import AreaRepository
-from utils import success
+from utils import success, random_float
 
 
 class ObservationRepository(Repository):
@@ -349,7 +349,7 @@ class ObservationRepository(Repository):
                            year_literal=None, area_name=None, indicator_name=None, previous_value=None,
                            year_of_previous_value=None, republish=None):
         """
-        It takes the info of indicator, area and year through the optional params area_iso3_code,
+        It takes the info of indicator and area through the optional params area_iso3_code,
         indicator_code and year_literal
         :param observation:
         :param area_iso3_code:
@@ -357,19 +357,22 @@ class ObservationRepository(Repository):
         :param year_literal:
         :return:
         """
+        norm_value = self._look_for_computation("normalized", observation)
+
         observation_dict = {}
         observation_dict['_id'] = observation.id
-        observation_dict['normalised'] = None  # TODO: Not yet added
+        observation_dict['normalized'] = norm_value
         observation_dict['area'] = area_iso3_code
         observation_dict['area_name'] = area_name
         observation_dict['indicator'] = indicator_code
         observation_dict['indicator_name'] = indicator_name
         observation_dict['value'] = observation.value
         observation_dict['year'] = str(observation.ref_year.value)
-        observation_dict['values'] = [observation.value]  # An array of one element
+        observation_dict['values'] = [norm_value]  # An array of one element
         observation_dict['uri'] = observation_uri
         observation_dict['previous_value'] = self._build_previous_value_object(previous_value, year_of_previous_value)
         observation_dict['republish'] = republish
+        observation_dict['scored'] = self._look_for_computation("scored", observation)
 
         self._db['observations'].insert(observation_dict)
 
@@ -381,6 +384,21 @@ class ObservationRepository(Repository):
         else:
             return {'value': value, 'year': str(year)}
 
+
+    @staticmethod
+    def _look_for_computation(comp_type, observation):
+        for comp in observation.computations:
+            if comp.comp_type == comp_type:
+                return comp.value
+
+        ### This lines are here temporally, for fake data
+        if comp_type == "normalized":
+            return random_float(-4, 4)
+        elif comp_type == "scored" and observation.obs_type != "raw":
+            return random_float(1, 99)
+        ###
+
+        return None
 
 
     def group_observations_by_country(self, observations):

@@ -1,5 +1,7 @@
 __author__ = 'guillermo'
 
+import random
+
 
 def success(data):
     return {"success": True, "data": data}
@@ -42,3 +44,11 @@ def normalize_high_low(original):
         raise ValueError("Only 'high' or 'low' allowed as content of the attribute 'high_low'")
     else:
         return result
+
+
+def random_int(first, last):
+    return random.randint(first, last)
+
+
+def random_float(first, last):
+    return random.random() * (first - last) + first + 1
