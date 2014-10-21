@@ -4,12 +4,9 @@ from config import port, db_name, host
 from .mongo_connection import connect_to_db
 from .indicator_repository import IndicatorRepository
 from .area_repository import AreaRepository
-<<<<<<< HEAD
 from utils import success, random_float
-=======
 from .visualization_repository import VisualizationRepository
 from utils import success
->>>>>>> 6ea31b50ad378d912280b39143e414624bd1674f
 
 
 class ObservationRepository(Repository):
@@ -541,7 +538,7 @@ class ObservationRepository(Repository):
         if observation["success"] and len(observation["data"]) > 0:
             observation = observation["data"][0]
             observation['normalised'] = normalized_value
-            self._db['observations'].update({'_id':observation["_id"]}, {"$set": observation}, upsert=False)
+            self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
 
     @staticmethod
     def _build_previous_value_object(value, year):
