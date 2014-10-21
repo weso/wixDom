@@ -89,6 +89,6 @@ class VisualizationRepository(object):
                 elif desired_type is None:
                     return obs.value
                 else:
-                    raise ValueError("Unrecognized desired type: {}".format(desired_type))
+                    return obs.value  # Default, not error.
 
         return None  # No observation found for target_year in this list
