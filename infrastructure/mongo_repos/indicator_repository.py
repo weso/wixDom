@@ -115,7 +115,6 @@ class IndicatorRepository(Repository):
         indicator_dict['uri'] = indicator_uri
         indicator_dict['republish'] = indicator.republish
 
-
         self._db['indicators'].insert(indicator_dict)
 
 

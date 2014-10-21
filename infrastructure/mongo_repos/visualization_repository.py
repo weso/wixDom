@@ -17,6 +17,22 @@ class VisualizationRepository(object):
         self._url_root = url_root
         self._FIRST_YEAR, self._LAST_YEAR = self._get_first_and_last_year()
 
+    def get_visualizations(self, indicator_code, countries):
+        filter = {
+            "$and": [
+                {
+                    "indicator": indicator_code
+                },
+                {
+                    "area": {
+                        "$in": countries
+                    }
+                }
+            ]
+        }
+
+        return self._db['visualizations'].find(filter)
+
     @staticmethod
     def _get_first_and_last_year():
         # I am still thinking if im going to consume an API method to discover this data
