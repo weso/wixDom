@@ -7,7 +7,7 @@ from utils import normalize_group_name
 
 class VisualizationRepository(object):
     """
-    This is the only class of this package that does not have inheritance relationships.
+    It does not have inheritance relationships.
     It does not represent an entity, but an abstract group of data handy only for visualizations.
     """
 
@@ -44,17 +44,35 @@ class VisualizationRepository(object):
         :param observations:
         :return:
         """
-
+        type_of_obs_desirable = self._look_for_type_of_obs_desirable(observations[0])
         result = []
         for i in range(self._FIRST_YEAR, self._LAST_YEAR + 1):
-            result.append(self._look_for_a_value_for_a_year(i, observations))  # The method could return None. NP =)
+            result.append(self._look_for_a_value_for_a_year(i, observations, type_of_obs_desirable))  # The method could return None. NP =)
         return result
 
+    @staticmethod
+    def _look_for_type_of_obs_desirable(observation):
+        for comp in observation.computations:
+            if comp.comp_type == "scored":
+                return "scored"
+        for comp in observation.computations:
+            if comp.comp_type == "normalized":
+                return "normalized"
+        else:
+            return None
 
     @staticmethod
-    def _look_for_a_value_for_a_year(year_target, observations):
+    def _look_for_a_value_for_a_year(year_target, observations, desired_type):
         for obs in observations:
             year_obs = obs.ref_year.value
             if str(year_obs) == str(year_target):
-                return obs.value
+                if desired_type == "scored":
+                    pass
+                elif desired_type == "normalized":
+                    pass
+                elif desired_type is None:
+                    return obs.value
+                else:
+                    raise ValueError("Unrecognized desired type: {}".format(desired_type))
+
         return None  # No observation found for target_year in this list

@@ -33,7 +33,7 @@ class Observation(Entity):
 
     def __init__(self, event):
         super(Observation, self).__init__(event.originator_id, event.originator_version)
-        self._computation = None
+        self._computations = []
         self._issued = event.issued
         self._publisher = event.publisher
         self._type = event.obs_type
@@ -45,15 +45,13 @@ class Observation(Entity):
         self._ref_year = None
 
     def __repr__(self):
-        return "{d}Observation(id={id!r}," \
-               "computation={computation!r}, issued={issued!r}, " \
+        return "{d}Observation(id={id!r}, " \
+               "issued={issued!r}, " \
                "publisher={publisher!r}, type={obs_type!r}, label={label!r}, " \
                "status={status!r}, " \
                "ref_indicator={ref_indicator!r}, value={value!r}, " \
                "ref_area={ref_area!r}, ref_year={ref_year!r}) ". \
             format(d="*Discarded* " if self.discarded else "", id=self._id,
-                   computation=self._computation if self.computation else
-                   "no computation added yet",
                    issued=self._issued, publisher=self._publisher,
                    obs_type=self._type, label=self._label,
                    status=self._status, ref_indicator=self._ref_indicator_id,
@@ -64,17 +62,10 @@ class Observation(Entity):
     # Properties
     # =======================================================================================
     @property
-    def computation(self):
+    def computations(self):
         self._check_not_discarded()
-        return self._computation
+        return self._computations
 
-    @computation.setter
-    def computation(self, value):
-        self._check_not_discarded()
-        if len(value) < 1:
-            raise ValueError("Observation's computation cannot be empty")
-        self._computation = value
-        self.increment_version()
 
     @property
     def issued(self):
@@ -178,6 +169,13 @@ class Observation(Entity):
         self._ref_year = value
         self.increment_version()
 
+    def add_computation(self, comp_type, value):
+        computation = Computation(comp_type=comp_type, value=value)
+        self._computations.append(computation)
+        self.increment_version()
+        return computation
+
+
     # =======================================================================================
     # Commands
     # =======================================================================================
@@ -193,30 +191,9 @@ class Observation(Entity):
         self._apply(event)
         publish(event)
 
-    @staticmethod
-    def validate_computation_type(_type):
-        if _type not in ["raw", "normalized", "ranked", "scored", "grouped"]:
-            raise ValueError("There is no {} computation type".format(_type))
-        return _type
 
-    def add_computation(self, _type=None, reason=None, _slice=None,
-                        dimension=None, mean=None, std_deviation=None, value_max=None,
-                        value_min=None, component=None, data_set=None,
-                        filter_dimension=None, filter_value=None):
 
-        self._check_not_discarded()
-        event = Observation.ComputationAdded(
-            originator_id=self.id, originator_version=self.version,
-            computation_id=uuid.uuid4().hex[:24], computation_version=0,
-            type=self.validate_computation_type(_type), reason=reason, slice=_slice,
-            dimension=dimension, mean=mean, std_deviation=std_deviation,
-            value_max=value_max, value_min=value_min, component=component,
-            data_set=data_set, filter_dimension=filter_dimension,
-            filter_value=filter_value)
 
-        self._apply(event)
-        publish(event)
-        return self.computation
 
     def reference_indicator(self, indicator):
         """Reference an indicator from this observation.
@@ -293,15 +270,6 @@ def _(event):
 def _(event, obs):
     obs.validate_event_originator(event)
     obs._discarded = True
-    obs.increment_version()
-    return obs
-
-
-@when.register(Observation.ComputationAdded)
-def _(event, obs):
-    obs.validate_event_originator(event)
-    computation = Computation(event, obs)
-    obs._computation = computation
     obs.increment_version()
     return obs
 
