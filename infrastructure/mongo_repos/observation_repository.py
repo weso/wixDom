@@ -529,6 +529,7 @@ class ObservationRepository(Repository):
         observation_dict['previous_value'] = self._build_previous_value_object(previous_value, year_of_previous_value)
         observation_dict['republish'] = republish
         observation_dict['scored'] = self._look_for_computation("scored", observation)
+        observation_dict['ranked'] = self._look_for_computation("ranked", observation)
 
         self._db['observations'].insert(observation_dict)
 
@@ -537,7 +538,7 @@ class ObservationRepository(Repository):
         observation = self.find_observations(indicator_code=indicator_code, area_code=area_iso3_code, year=year_literal)
         if observation["success"] and len(observation["data"]) > 0:
             observation = observation["data"][0]
-            observation['normalised'] = normalized_value
+            observation['normalized'] = normalized_value
             self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
 
     @staticmethod
