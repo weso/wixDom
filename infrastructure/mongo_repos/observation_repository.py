@@ -533,7 +533,7 @@ class ObservationRepository(Repository):
         observation = self.find_observations(indicator_code=indicator_code, area_code=area_iso3_code, year=year_literal)
         if observation["success"]:
             observation = observation["data"]
-            observation["normalized"] = normalized_value
+            observation["normalised"] = normalized_value
             self._db['observations'].update({'_id':observation["_id"]}, {"$set": observation}, upsert=False)
 
     @staticmethod
