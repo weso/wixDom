@@ -17,6 +17,17 @@ class VisualizationRepository(object):
         self._url_root = url_root
         self._FIRST_YEAR, self._LAST_YEAR = self._get_first_and_last_year()
 
+    def get_visualizations_in_object(self, indicator_code, countries):
+        visualizations = self.get_visualizations(indicator_code, countries)
+
+        obj = {}
+
+        for observation in visualizations:
+            area = observation["area"]
+            obj[area] = observation
+
+        return obj
+
     def get_visualizations(self, indicator_code, countries):
         filter = {
             "$and": [
