@@ -514,6 +514,7 @@ class ObservationRepository(Repository):
         :return:
         """
         norm_value = self._look_for_computation("normalized", observation)
+        scored_value = self._look_for_computation("scored", observation)
 
         observation_dict = {}
         observation_dict['_id'] = observation.id
@@ -524,22 +525,19 @@ class ObservationRepository(Repository):
         observation_dict['indicator_name'] = indicator_name
         observation_dict['value'] = observation.value
         observation_dict['year'] = str(observation.ref_year.value)
-        observation_dict['values'] = [norm_value]  # An array of one element
+        if scored_value is not None:
+            observation_dict['values'] = [scored_value]  # An array of one element
+        elif norm_value is not None:
+            observation_dict['values'] = [norm_value]
+        else:
+            observation_dict['values'] = [observation.value]
         observation_dict['uri'] = observation_uri
         observation_dict['previous_value'] = self._build_previous_value_object(previous_value, year_of_previous_value)
         observation_dict['republish'] = republish
-        observation_dict['scored'] = self._look_for_computation("scored", observation)
-        observation_dict['ranked'] = self._look_for_computation("ranked", observation)
+        observation_dict['scored'] = scored_value
 
         self._db['observations'].insert(observation_dict)
 
-    def normalize_plain_observation(self, area_iso3_code=None, indicator_code=None, year_literal=None,
-                                    normalized_value=None):
-        observation = self.find_observations(indicator_code=indicator_code, area_code=area_iso3_code, year=year_literal)
-        if observation["success"] and len(observation["data"]) > 0:
-            observation = observation["data"][0]
-            observation['normalized'] = normalized_value
-            self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
 
     @staticmethod
     def _build_previous_value_object(value, year):
@@ -551,16 +549,18 @@ class ObservationRepository(Repository):
 
     @staticmethod
     def _look_for_computation(comp_type, observation):
+        if observation.obs_type == comp_type:
+            return observation.value
         for comp in observation.computations:
             if comp.comp_type == comp_type:
                 return comp.value
 
-        ### This lines are here temporally, for fake data
-        if comp_type == "normalized":
-            return random_float(-4, 4)
-        elif comp_type == "scored" and observation.obs_type != "raw":
-            return random_float(1, 99)
-        ###
+        # ### This lines are here temporally, for fake data
+        # if comp_type == "normalized":
+        #     return random_float(-4, 4)
+        # elif comp_type == "scored" and observation.obs_type != "raw":
+        #     return random_float(1, 99)
+        # ###
 
         return None
 
