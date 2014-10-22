@@ -17,27 +17,11 @@ class VisualizationRepository(object):
         self._url_root = url_root
         self._FIRST_YEAR, self._LAST_YEAR = self._get_first_and_last_year()
 
-    def get_visualizations(self, indicator_code, countries):
-        filter = {
-            "$and": [
-                {
-                    "indicator": indicator_code
-                },
-                {
-                    "area": {
-                        "$in": countries
-                    }
-                }
-            ]
-        }
-
-        return self._db['visualizations'].find(filter)
-
     @staticmethod
     def _get_first_and_last_year():
         # I am still thinking if im going to consume an API method to discover this data
         # or config, or constants, or params or what...
-        return 2007, 2014
+        return 2007, 2013
 
     def insert_visualization(self, observations, area_iso3_code, area_name, indicator_code, indicator_name):
         visualization_dict = {}
@@ -60,18 +44,20 @@ class VisualizationRepository(object):
         :param observations:
         :return:
         """
-        type_of_obs_desirable = self._look_for_type_of_obs_desirable(observations[0])
+        type_of_obs_desirable = self._look_for_type_of_obs_desirable(observations)
         result = []
         for i in range(self._FIRST_YEAR, self._LAST_YEAR + 1):
             result.append(self._look_for_a_value_for_a_year(i, observations, type_of_obs_desirable))  # The method could return None. NP =)
         return result
 
     @staticmethod
-    def _look_for_type_of_obs_desirable(observation):
-        for comp in observation.computations:
+    def _look_for_type_of_obs_desirable(observations):
+        if len(observations) == 0:
+            return None
+        for comp in observations[0].computations:
             if comp.comp_type == "scored":
                 return "scored"
-        for comp in observation.computations:
+        for comp in observations[0].computations:
             if comp.comp_type == "normalized":
                 return "normalized"
         else:
@@ -82,13 +68,13 @@ class VisualizationRepository(object):
         for obs in observations:
             year_obs = obs.ref_year.value
             if str(year_obs) == str(year_target):
-                if desired_type == "scored":
-                    pass
-                elif desired_type == "normalized":
-                    pass
-                elif desired_type is None:
+                if desired_type is None:
                     return obs.value
-                else:
-                    return obs.value  # Default, not error.
+                elif desired_type in ['scored', 'normalized']:
+                    for comp in obs.computations:
+                        if comp.comp_type == desired_type:
+                            return comp.value
+                    raise ValueError("Not found but expected computation {} for an obs".format(desired_type))
+
 
         return None  # No observation found for target_year in this list
