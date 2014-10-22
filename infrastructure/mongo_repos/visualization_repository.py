@@ -47,7 +47,8 @@ class VisualizationRepository(object):
         type_of_obs_desirable = self._look_for_type_of_obs_desirable(observations)
         result = []
         for i in range(self._FIRST_YEAR, self._LAST_YEAR + 1):
-            result.append(self._look_for_a_value_for_a_year(i, observations, type_of_obs_desirable))  # The method could return None. NP =)
+            # The next method could return None. NP =)
+            result.append(round(self._look_for_a_value_for_a_year(i, observations, type_of_obs_desirable), 2))
         return result
 
     @staticmethod
