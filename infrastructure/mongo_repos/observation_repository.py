@@ -536,7 +536,16 @@ class ObservationRepository(Repository):
         observation_dict['republish'] = republish
         observation_dict['scored'] = scored_value
 
+
         self._db['observations'].insert(observation_dict)
+
+    def normalize_plain_observation(self, area_iso3_code=None, indicator_code=None, year_literal=None,
+                                    normalized_value=None):
+        observation = self.find_observations(indicator_code=indicator_code, area_code=area_iso3_code, year=year_literal)
+        if observation["success"] and len(observation["data"]) > 0:
+            observation = observation["data"][0]
+            observation['normalized'] = normalized_value
+            self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
 
 
     @staticmethod
