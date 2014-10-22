@@ -17,7 +17,6 @@ class VisualizationRepository(object):
         self._url_root = url_root
         self._FIRST_YEAR, self._LAST_YEAR = self._get_first_and_last_year()
 
-<<<<<<< HEAD
     def get_visualizations_in_object(self, indicator_code, countries):
         visualizations = self.get_visualizations(indicator_code, countries)
 
@@ -45,8 +44,6 @@ class VisualizationRepository(object):
 
         return self._db['visualizations'].find(filter)
 
-=======
->>>>>>> FETCH_HEAD
     @staticmethod
     def _get_first_and_last_year():
         # I am still thinking if im going to consume an API method to discover this data
