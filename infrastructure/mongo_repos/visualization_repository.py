@@ -75,7 +75,10 @@ class VisualizationRepository(object):
         result = []
         for i in range(self._FIRST_YEAR, self._LAST_YEAR + 1):
             # The next method could return None. NP =)
-            result.append(round(self._look_for_a_value_for_a_year(i, observations, type_of_obs_desirable), 2))
+            value = self._look_for_a_value_for_a_year(i, observations, type_of_obs_desirable)
+            if value is not None:
+                value = round(value, 2)
+            result.append(value)
         return result
 
     @staticmethod
