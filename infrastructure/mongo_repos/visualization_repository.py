@@ -45,7 +45,7 @@ class VisualizationRepository(object):
         return self._db['visualizations'].find(filter)
 
     @staticmethod
-    def _get_first_and_last_year():
+    def get_first_and_last_year():
         # I am still thinking if im going to consume an API method to discover this data
         # or config, or constants, or params or what...
         return 2007, 2013
@@ -59,6 +59,27 @@ class VisualizationRepository(object):
         visualization_dict['values'] = self._build_values_object(observations)
 
         self._db['visualizations'].insert(visualization_dict)
+
+    def insert_built_visualization(self, array_values, area_iso3_code, area_name, indicator_code, indicator_name):
+        """
+        Handy for inserting in mongo a visualization document by directly receiving the array "values" built.
+
+
+        :param array_values:
+        :param area_iso3_code:
+        :param area_name:
+        :param indicator_code:
+        :param indicator_name:
+        :return:
+        """
+        visualization_dict = {}
+        visualization_dict['area'] = area_iso3_code
+        visualization_dict['area_name'] = area_name
+        visualization_dict['indicator'] = normalize_group_name(indicator_code)
+        visualization_dict['indicator_name'] = indicator_name
+        visualization_dict['values'] = array_values
+        self._db['visualizations'].insert(visualization_dict)
+
 
     def _build_values_object(self, observations):
         """
