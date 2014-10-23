@@ -4,9 +4,9 @@ from config import port, db_name, host
 from .mongo_connection import connect_to_db
 from .indicator_repository import IndicatorRepository
 from .area_repository import AreaRepository
-from utils import success, random_float
+from utils import success, normalize_group_name
 from .visualization_repository import VisualizationRepository
-from utils import success
+
 
 
 class ObservationRepository(Repository):
@@ -588,7 +588,7 @@ class ObservationRepository(Repository):
         observation_dict['normalized'] = norm_value
         observation_dict['area'] = area_iso3_code
         observation_dict['area_name'] = area_name
-        observation_dict['indicator'] = indicator_code
+        observation_dict['indicator'] = normalize_group_name(indicator_code)
         observation_dict['indicator_name'] = indicator_name
         observation_dict['value'] = observation.value
         observation_dict['year'] = str(observation.ref_year.value)
@@ -622,6 +622,22 @@ class ObservationRepository(Repository):
             elif value_current_year > value_previous_year:  # Case current is higher
                 tendency = 1
             return {'value': value_previous_year, 'year': str(year), 'tendency': tendency}
+
+
+    def update_previous_value_object(self, indicator_code, area_code, current_year,
+                                     previous_year, previous_value, tendency):
+        observation = self.find_observations(indicator_code=normalize_group_name(indicator_code),
+                                             area_code=area_code,
+                                             year=current_year)
+        if observation["success"] and len(observation["data"]) > 0:
+            observation = observation["data"][0]
+            observation['previous_value'] = {'value': previous_value, 'year': str(previous_year), 'tendency': tendency}
+            self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
+        else:
+            raise ValueError("Unable to actualize previous value of "
+                             "observation: Obs not found. {},{},{}".format(indicator_code,
+                                                                           area_code,
+                                                                           current_year))
 
 
     @staticmethod
