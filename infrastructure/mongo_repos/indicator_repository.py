@@ -117,4 +117,11 @@ class IndicatorRepository(Repository):
 
         self._db['indicators'].insert(indicator_dict)
 
+    def update_indicator_weight(self, indicator_code, weight=None):
+        indicator = self.find_indicators_by_code(indicator_code)
+        if indicator["success"]:
+            indicator = indicator["data"]
+            indicator['weight'] = weight
+            self._db['indicators'].update({'_id': indicator["_id"]}, {"$set": indicator}, upsert=False)
+
 
