@@ -23,7 +23,7 @@ class ObservationRepository(Repository):
         # Ranking bar chart and general (ALL) map
         barChart = self.find_observations(indicator_code, "ALL", year)
 
-        # mean and median
+        # mean and medianins
         mean = 0
         median = []
 
@@ -599,7 +599,10 @@ class ObservationRepository(Repository):
                                                                                propper_values_content)
         observation_dict['republish'] = republish
         observation_dict['scored'] = scored_value
-        observation_dict['ranked'] = self._look_for_computation("ranked", observation)
+        ranked_value = self._look_for_computation("ranked", observation)
+        if ranked_value is not None:
+            ranked_value = int(ranked_value)
+        observation_dict['ranked'] = ranked_value
 
 
         self._db['observations'].insert(observation_dict)
