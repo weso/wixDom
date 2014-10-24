@@ -15,7 +15,7 @@ class VisualizationRepository(object):
     def __init__(self, url_root):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
-        self._FIRST_YEAR, self._LAST_YEAR = self._get_first_and_last_year()
+        self._FIRST_YEAR, self._LAST_YEAR = self.get_first_and_last_year()
 
     def get_visualizations_in_object(self, indicator_code, countries):
         visualizations = self.get_visualizations(indicator_code, countries)
