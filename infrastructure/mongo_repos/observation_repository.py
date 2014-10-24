@@ -599,6 +599,7 @@ class ObservationRepository(Repository):
                                                                                propper_values_content)
         observation_dict['republish'] = republish
         observation_dict['scored'] = scored_value
+        observation_dict['ranked'] = self._look_for_computation("ranked", observation)
 
 
         self._db['observations'].insert(observation_dict)
