@@ -23,7 +23,7 @@ class ObservationRepository(Repository):
         # Ranking bar chart and general (ALL) map
         barChart = self.find_observations(indicator_code, "ALL", year)
 
-        # mean and median
+        # mean and medianins
         mean = 0
         median = []
 
