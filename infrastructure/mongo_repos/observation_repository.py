@@ -599,17 +599,24 @@ class ObservationRepository(Repository):
                                                                                propper_values_content)
         observation_dict['republish'] = republish
         observation_dict['scored'] = scored_value
+        ranked_value = self._look_for_computation("ranked", observation)
+        if ranked_value is not None:
+            ranked_value = int(ranked_value)
+        observation_dict['ranked'] = ranked_value
 
 
         self._db['observations'].insert(observation_dict)
 
     def normalize_plain_observation(self, area_iso3_code=None, indicator_code=None, year_literal=None,
-                                    normalized_value=None):
+                                    normalized_value=None, computation_type=None):
         observation = self.find_observations(indicator_code=indicator_code, area_code=area_iso3_code, year=year_literal)
         if observation["success"] and len(observation["data"]) > 0:
             observation = observation["data"][0]
-            observation['normalized'] = normalized_value
+            if computation_type is None:
+                computation_type = "normalized"
+            observation[computation_type] = normalized_value
             self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
+
 
     @staticmethod
     def _build_previous_value_object(value_previous_year, year, value_current_year):
