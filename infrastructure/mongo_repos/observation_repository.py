@@ -603,9 +603,23 @@ class ObservationRepository(Repository):
         if ranked_value is not None:
             ranked_value = int(ranked_value)
         observation_dict['ranked'] = ranked_value
+        observation_dict['continent'] = self._look_for_continent_iso3(area_iso3_code)
+
 
 
         self._db['observations'].insert(observation_dict)
+
+    def _look_for_continent_iso3(self, area_iso3_code):
+        if 'continents_dict' not in self.__dict__:   # Lazy initialization and just one query
+            self._continents_dict = self._build_continents_dict()
+        return self._continents_dict[area_iso3_code]
+
+    def _build_continents_dict(self):
+        result = {}
+        for country in self._area.find_countries(None)['data']:
+            result[country['iso3']] = country['area']
+        return result
+
 
     def normalize_plain_observation(self, area_iso3_code=None, indicator_code=None, year_literal=None,
                                     normalized_value=None, computation_type=None):
