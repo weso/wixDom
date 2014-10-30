@@ -23,11 +23,27 @@ class ObservationRepository(Repository):
         # Ranking bar chart and general (ALL) map
         barChart = self.find_observations(indicator_code, "ALL", year)
 
+        # Get list of countries
+        queryCountries = "ALL"
+
+        if observations["success"] and area_code is not None and area_code != "ALL":
+            areas = self.get_countries_by_code_name_or_income(area_code)
+
+            queryCountries = areas["countries"]
+
+        aux_data = self.get_visualisations(observations, indicator_code, area_code, year, max_bars)
+
+        byCountry = aux_data["byCountry"]
+        secondVisualisation = aux_data["visualisations"]
+        years = self.get_year_array()
+
+        years = years["data"] if years["success"] else []
+
         # mean and median
         mean = 0
         median = []
 
-        for observation in barChart["data"]:
+        for observation in observations["data"]:
             value = observation["scored"]
 
             if value is None:
@@ -39,7 +55,7 @@ class ObservationRepository(Repository):
             mean += value
             median.append(value)
 
-        length = len(barChart["data"])
+        length = len(observations["data"])
         mean = 0 if length <= 0 else mean / length
         median = self.getMedian(median)
 
@@ -47,23 +63,8 @@ class ObservationRepository(Repository):
         median = round(median, 2)
 
         # higher and lower
-        higher = barChart["data"][0] if length > 0 else ""
-        lower = barChart["data"][length - 1] if length > 0 else ""
-
-        # Get list of countries
-        queryCountries = "ALL"
-
-        if observations["success"] and area_code is not None and area_code != "ALL":
-            areas = self.get_countries_by_code_name_or_income(area_code)
-
-            queryCountries = areas["countries"]
-
-        aux_data = self.get_visualisations(observations, indicator_code, area_code, year, max_bars)
-        byCountry = aux_data["byCountry"]
-        secondVisualisation = aux_data["visualisations"]
-        years = self.get_year_array()
-
-        years = years["data"] if years["success"] else []
+        higher = observations["data"][0] if length > 0 else ""
+        lower = observations["data"][length - 1] if length > 0 else ""
 
         if barChart["success"] and observations["success"]:
             # set selected countries
@@ -162,18 +163,10 @@ class ObservationRepository(Repository):
                 index += 1
 
             def sort_by_value(a, b):
-                a_value = a["scored"]
-                b_value = b["scored"]
+                a_rank = a["ranked"]
+                b_rank = b["ranked"]
 
-                if a_value is None or b_value is None:
-                    a_value = a["normalized"]
-                    b_value = b["normalized"]
-
-                if a_value is None or b_value is None:
-                    a_value = a["value"]
-                    b_value = b["value"]
-
-                return cmp(b_value, a_value)
+                return cmp(a_rank, b_rank)
 
             data1.sort(sort_by_value)
 
@@ -436,7 +429,7 @@ class ObservationRepository(Repository):
         if len(filters) > 0:
             search = {"$and": filters}
 
-        observations = self._db["observations"].find(search).sort([("scored", -1), ("normalized", -1), ("value", -1)])
+        observations = self._db["observations"].find(search).sort([("ranked", 1)])
         observation_list = []
 
         for observation in observations:
