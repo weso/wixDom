@@ -15,6 +15,16 @@ class RankingRepository(object):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
+    def find_rankings(self, year):
+        rankings = self._db['rankings'].find({"year": year})
+
+        result = None
+
+        for ranking in rankings:
+            result = ranking
+            ranking["values"].sort(key = lambda x: x["rank"])
+
+        return result
 
     def insert_ranking(self, groups_of_observations):
         """
