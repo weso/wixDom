@@ -66,6 +66,19 @@ class ObservationRepository(Repository):
         higher = observations["data"][0] if length > 0 else ""
         lower = observations["data"][length - 1] if length > 0 else ""
 
+        # continents
+        continents = self._area.find_continents(None)
+
+        if continents["success"]:
+            data = continents["data"]
+            continents = {}
+
+            for datum in data:
+                code = datum["iso3"]
+                name = datum["name"]
+
+                continents[code] = name
+
         if barChart["success"] and observations["success"]:
             # set selected countries
             for observation in barChart["data"]:
@@ -84,7 +97,8 @@ class ObservationRepository(Repository):
                 "higher": higher,
                 "lower": lower,
                 "byCountry": byCountry,
-                "years": reversed(years)
+                "years": reversed(years),
+                "continents": continents
             }
 
         return observations
