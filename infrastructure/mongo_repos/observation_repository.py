@@ -563,9 +563,7 @@ class ObservationRepository(Repository):
         observation["indicator_name"] = indicator["name"]
         observation["area_name"] = area["name"]
 
-     def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
-                           year_literal=None, area_name=None, indicator_name=None, previous_value=None,
-                           year_of_previous_value=None, republish=None):
+    def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None, year_literal=None, area_name=None, indicator_name=None, previous_value=None,year_of_previous_value=None, republish=None):
         """
         It takes the info of indicator and area through the optional params area_iso3_code,
         indicator_code and year_literal
