@@ -563,7 +563,7 @@ class ObservationRepository(Repository):
         observation["indicator_name"] = indicator["name"]
         observation["area_name"] = area["name"]
 
-    def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
+     def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
                            year_literal=None, area_name=None, indicator_name=None, previous_value=None,
                            year_of_previous_value=None, republish=None):
         """
@@ -604,21 +604,28 @@ class ObservationRepository(Repository):
             ranked_value = int(ranked_value)
         observation_dict['ranked'] = ranked_value
         observation_dict['continent'] = self._look_for_continent_iso3(area_iso3_code)
+        observation_dict['short_name'] = self._look_for_short_name(area_iso3_code)
 
 
 
         self._db['observations'].insert(observation_dict)
 
     def _look_for_continent_iso3(self, area_iso3_code):
-        if 'continents_dict' not in self.__dict__:   # Lazy initialization and just one query
-            self._continents_dict = self._build_continents_dict()
-        return self._continents_dict[area_iso3_code]
+        if 'local_areas_dict' not in self.__dict__:   # Lazy initialization and just one query
+            self.local_areas_dict = self._build_local_areas_dict()
+        return self.local_areas_dict[area_iso3_code]['area']
 
-    def _build_continents_dict(self):
+    def _look_for_short_name(self, area_iso3_code):
+        if 'local_areas_dict' not in self.__dict__:   # Lazy initialization and just one query
+            self.local_areas_dict = self._build_local_areas_dict()
+        return self.local_areas_dict[area_iso3_code]['short_name']
+
+    def _build_local_areas_dict(self):
         result = {}
         for country in self._area.find_countries(None)['data']:
-            result[country['iso3']] = country['area']
+            result[country['iso3']] = country
         return result
+
 
 
     def normalize_plain_observation(self, area_iso3_code=None, indicator_code=None, year_literal=None,
