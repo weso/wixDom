@@ -27,7 +27,7 @@ class ObservationRepository(Repository):
         mean = 0
         median = []
 
-        for observation in observations["data"]:
+        for observation in barChart["data"]:
             value = observation["scored"]
 
             if value is None:
@@ -39,7 +39,7 @@ class ObservationRepository(Repository):
             mean += value
             median.append(value)
 
-        length = len(observations["data"])
+        length = len(barChart["data"])
         mean = 0 if length <= 0 else mean / length
         median = self.getMedian(median)
 
@@ -47,8 +47,8 @@ class ObservationRepository(Repository):
         median = round(median, 2)
 
         # higher and lower
-        higher = observations["data"][0] if length > 0 else ""
-        lower = observations["data"][length - 1] if length > 0 else ""
+        higher = barChart["data"][0] if length > 0 else ""
+        lower = barChart["data"][length - 1] if length > 0 else ""
 
         # Get list of countries
         queryCountries = "ALL"
