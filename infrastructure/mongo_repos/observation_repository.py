@@ -44,13 +44,7 @@ class ObservationRepository(Repository):
         median = []
 
         for observation in observations["data"]:
-            value = observation["scored"]
-
-            if value is None:
-                value = observation["normalized"]
-
-            if value is None:
-                value = observation["value"]
+            value = observation["values"][0]
 
             mean += value
             median.append(value)
