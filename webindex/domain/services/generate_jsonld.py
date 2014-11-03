@@ -20,7 +20,7 @@ def get_observations():
         yield ob
 
 
-def annotate_json():
+def annotate_observations():
     for o in get_observations():
         o['@id'] = o.pop('uri')
         o['http://purl.org/weso/ontology/computex#Indicator'] = o.pop('indicator')
@@ -34,11 +34,11 @@ def annotate_json():
 def compact_json():
     with open('compacted_json.json', mode='w') as compacted:
         json.dump(jsonld.compact(obs, observations_context), compacted)
-        for doc in annotate_json():
+        for doc in annotate_observations():
             json.dump(doc, compacted, indent=2)
             print doc
 
 
 if __name__ == '__main__':
-    annotate_json()
+    annotate_observations()
     compact_json()
