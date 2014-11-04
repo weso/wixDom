@@ -452,6 +452,9 @@ class ObservationRepository(Repository):
 
         return success(observation_list)
 
+    def find_linked_observations(self):
+        return success([obs for obs in self._db['linked_observations'].find()])
+
     def get_indicators_by_code(self, code):
         codes = code.upper().strip().split(",")
 
