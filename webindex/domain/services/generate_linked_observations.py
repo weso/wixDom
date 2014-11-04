@@ -11,7 +11,7 @@ observations_context = {
     "continent": {"@id": "http://schema.org/Continent", "@type": "@id"}}
 
 
-r = requests.get('http://intertip.webfoundation.org/api/observations/ITU_G')
+r = requests.get('http://intertip.webfoundation.org/api/observations')
 observations = r.json()
 
 
