@@ -6,6 +6,7 @@ from .indicator_repository import IndicatorRepository
 from .area_repository import AreaRepository
 from utils import success, normalize_group_name
 from .visualization_repository import VisualizationRepository
+from .ranking_repository import RankingRepository
 
 
 
@@ -15,6 +16,7 @@ class ObservationRepository(Repository):
         self._indicator = IndicatorRepository(url_root=url_root)
         self._area = AreaRepository(url_root=url_root)
         self._visualization = VisualizationRepository(url_root=url_root)
+        self._ranking = RankingRepository(url_root=url_root)
         self._url_root = url_root
 
     def find_visualisations(self, indicator_code=None, area_code=None, year=None, max_bars=7):
@@ -82,6 +84,9 @@ class ObservationRepository(Repository):
                     code = observation["code"]
                     observation["selected"] = code in queryCountries
 
+            rankings = self._ranking.find_rankings(year)
+            self.set_observation_rankings(observations["data"], rankings)
+
             observations["data"] = {
                 "observations": observations["data"],
                 "bars": barChart["data"],
@@ -96,6 +101,20 @@ class ObservationRepository(Repository):
             }
 
         return observations
+
+    def set_observation_rankings(self, observations, rankings):
+        rankings = rankings["values"]
+        rankingList = {}
+
+        for ranking in rankings:
+            area = ranking["area"]
+            rankingList[area] = ranking
+
+        for observation in observations:
+            area = observation["area"]
+            extra = rankingList[area]
+
+            observation["extra"] = extra
 
     def get_visualisations(self, observations, indicator_code, area_code, year, max_bars):
         region = "ALL"
@@ -232,177 +251,6 @@ class ObservationRepository(Repository):
             "byCountry": {},
             "visualisations": []
         }
-
-    # def find_visualisations(self, indicator_code=None, area_code=None, year=None, max_bars=7):
-    #     observations = self.find_observations(indicator_code, area_code, year)
-    #     all_years = self.find_observations(indicator_code, area_code)["data"]
-    #
-    #     observationsByCountry = self.group_observations_by_country(all_years)
-    #     byCountry = observationsByCountry["byCountry"]
-    #     years = observationsByCountry["years"]
-    #
-    #     secondVisualisation = None
-    #
-    #     queryCountries = "ALL"
-    #
-    #     # Set continent info
-    #     if observations["success"] and area_code == "ALL":
-    #         secondVisualisation = list(observations["data"])
-    #
-    #         for observation in secondVisualisation:
-    #             area = observation["area"]
-    #             area = self._db["areas"].find({ "iso3": area })
-    #
-    #             for element in area:
-    #                 observation["continent"] = element["area"]
-    #                 observation["value"] = round(observation["value"], 2)
-    #                 # We set ISO3 AS name
-    #                 observation["name"] = element["iso3"]
-    #
-    #     # Country visualisations
-    #     if observations["success"] and area_code is not None and area_code != "ALL":
-    #         areas = self.get_countries_by_code_name_or_income(area_code)
-    #
-    #         queryCountries = areas["countries"]
-    #         areas = areas["areas"]
-    #
-    #         if areas is None:
-    #             return self._area.area_error(area_code)
-    #
-    #         previousRegion = areas[0]
-    #         sameRegion = True
-    #
-    #         for area in areas:
-    #             if area != previousRegion:
-    #                 sameRegion = False
-    #                 break
-    #             previousRegion = area
-    #
-    #         region = previousRegion if sameRegion else "ALL"
-    #
-    #         regionObservations = self.find_observations(indicator_code, region, year)
-    #
-    #         # Several countries bar chart
-    #         if regionObservations["success"]:
-    #             data1 = observations["data"]
-    #             data2 = regionObservations["data"]
-    #
-    #             if len(data2) < max_bars - len(data1):
-    #                 data2 = data2 + self.find_observations(indicator_code, "ALL", year)["data"]
-    #
-    #             processedCountries = []
-    #
-    #             # Set selected field
-    #             for observation in data1:
-    #                 observation["selected"] = True
-    #                 processedCountries.append(observation["code"])
-    #
-    #             index = 0
-    #             right = 0
-    #             left = 0
-    #             top = len(data2) - 1
-    #
-    #             right_stopped = False
-    #             left_stopped = False
-    #
-    #             # data is completed with countries of the region (higher and lower)
-    #             while len(data1) < max_bars:
-    #                 if right_stopped and left_stopped:
-    #                     break
-    #
-    #                 if index % 2 == 0:
-    #                     if right < len(data2):
-    #                         if data2[right]["code"] not in processedCountries:
-    #                             data1.append(data2[right])
-    #                             processedCountries.append(data2[right]["code"])
-    #                         right += 1
-    #                     else:
-    #                         right_stopped = True
-    #                 else:
-    #                     pos = top - left
-    #                     if pos >= 0 and pos < len(data2):
-    #                         if data2[pos]["code"] not in processedCountries:
-    #                             data1.append(data2[pos])
-    #                             processedCountries.append(data2[pos]["code"])
-    #                         left += 1
-    #                     else:
-    #                         left_stopped = True
-    #
-    #                 index += 1
-    #
-    #             def sort_by_value(a, b):
-    #                 return cmp(b["value"], a["value"])
-    #
-    #             data1.sort(sort_by_value)
-    #
-    #             for observation in data1:
-    #                 observation["value"] = round(observation["value"], 2)
-    #
-    #             # Several countries line chart
-    #
-    #             # Get selected countries from previous query
-    #             selectedCountries = ""
-    #
-    #             for observation in data1:
-    #                 country = observation["area"]
-    #
-    #                 if selectedCountries != "":
-    #                     selectedCountries += ","
-    #
-    #                 selectedCountries += country
-    #
-    #             timeObservations = self.find_observations(indicator_code, selectedCountries, None)
-    #
-    #             if timeObservations["success"]:
-    #                 secondVisualisation = self.group_observations_by_country(timeObservations["data"])
-    #                 byCountry = secondVisualisation["byCountry"]
-    #                 years = secondVisualisation["years"]
-    #
-    #     # Ranking bar chart and general (ALL) map
-    #     barChart = self.find_observations(indicator_code, "ALL", year)
-    #
-    #     # mean and median
-    #     mean = 0
-    #     median = []
-    #
-    #     for observation in observations["data"]:
-    #         value = observation["value"]
-    #         mean += value
-    #         median.append(value)
-    #
-    #     length = len(observations["data"])
-    #     mean = 0 if length <= 0 else mean / length
-    #     median = self.getMedian(median)
-    #
-    #     mean = round(mean, 2)
-    #     median = round(median, 2)
-    #
-    #     # higher and lower
-    #     higher = observations["data"][0] if length > 0 else ""
-    #     lower = observations["data"][length - 1] if length > 0 else ""
-    #
-    #     if barChart["success"] and observations["success"]:
-    #         # set selected countries
-    #         for observation in barChart["data"]:
-    #             if queryCountries == "ALL":
-    #                observation["selected"] = True
-    #             else:
-    #                 code = observation["code"]
-    #                 observation["selected"] = code in queryCountries
-    #
-    #         observations["data"] = {
-    #             "observations": observations["data"],
-    #             "bars": barChart["data"],
-    #             "secondVisualisation": secondVisualisation,
-    #             "mean": mean,
-    #             "median": median,
-    #             "higher": higher,
-    #             "lower": lower,
-    #             "byCountry": byCountry,
-    #             "years": years
-    #         }
-    #
-    #     return observations
 
     def find_observations(self, indicator_code=None, area_code=None, year=None):
         filters = []
