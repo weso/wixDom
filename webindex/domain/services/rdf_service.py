@@ -27,7 +27,6 @@ class RDFService(object):
         self._add_year_triples(observation, graph, years_added)
         self._add_observation_triples(observation, graph)
 
-
     def _add_year_triples(self, observation, graph, years_added_dict):
         if observation['year'] in years_added_dict:
             return  # It means that the triplets of this year had already been added
@@ -46,7 +45,6 @@ class RDFService(object):
         graph.add(year_term,
                   example.term("value"),
                   Literal(int(observation['year']), datatype=XSD.integer))
-
 
     def _add_observation_triples(self, observation, graph):
         #### Initializing observation term
@@ -98,7 +96,6 @@ class RDFService(object):
                       example.term("ref-area"),
                       example.term(observation_term['area']))
 
-
     @staticmethod
     def _build_observation_id(observation_dict):
         return "OBS_{}_{}_{}".format(observation_dict["indicator"],
@@ -110,8 +107,6 @@ class RDFService(object):
         return "Observation for {} over the indicator {} during {}".format(observation_dict["area"],
                                                                            observation_dict['indicator',
                                                                            observation_dict['year']])
-
-
 
     def _add_country_triples(self, observation, graph, countries_added_dict):
         if observation['area'] in countries_added_dict:
@@ -181,7 +176,6 @@ class RDFService(object):
                   example.term("income_level"),
                   income_term)
 
-
     def _get_income_label(self, income_code):
         #### The income information is not stored is not supposed to be
         #### stored in the database... so we need to do this dirty shortcut
@@ -211,15 +205,13 @@ class RDFService(object):
         graph.add(indicator_term, RDF.type, cex.term("Indicator"))
         graph.add(indicator_term, RDFS.label, Literal(indicator_dict['name'], lang='en'))
         graph.add(indicator_term, RDFS.comment, Literal(indicator_dict['description'], lang='en'))
-        graph.add(indicator_term, lb.term('indicatorType'), cex.term(indicator_dict['type'])) # Check this.
-                                                                                              # Is it lb for sure?
-        graph.add(indicator_term, example.term('parent'), Literal(indicator_dict['parent'])) # Check example.org
-        graph.add(indicator_term, example.term('index'), Literal(indicator_dict['index']))
-        graph.add(indicator_term, example.term('subindex'), Literal(indicator_dict['subindex']))
-        graph.add(indicator_term, example.term('component'), Literal(indicator_dict['component']))
+        graph.add(indicator_term, lb.term('indicatorType'), cex.term(indicator_dict['type'])) # Is it lb for sure?
+        graph.add(indicator_term, lb.term('republish'), cex.term(indicator_dict['republish']))
+        graph.add(indicator_term, example.term('parent'), cex.term(indicator_dict['parent'])) # Check example.org
+        graph.add(indicator_term, example.term('index'), cex.term(indicator_dict['index']))
+        graph.add(indicator_term, example.term('subindex'), cex.term(indicator_dict['subindex']))
+        graph.add(indicator_term, example.term('component'), cex.term(indicator_dict['component']))
         graph.add(indicator_term, example.term('weight'), Literal(indicator_dict['weight']))
-
-        return graph
 
     def _find_country_dict(self, iso3_code):
         result = self._area_repository.find_countries_by_code_or_income(iso3_code)
