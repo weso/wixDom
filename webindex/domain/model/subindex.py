@@ -215,6 +215,7 @@ class Repository(object):
     """Abstract implementation of generic queries for managing subindexes."""
     __metaclass__ = ABCMeta
 
-    def insert_subindex(self, subindex, subindex_uri=None, index_name=None, weight=None):
+    def insert_subindex(self, subindex, subindex_uri=None, index_name=None, weight=None,
+                        provider_name=None, provider_url=None):
         pass
 

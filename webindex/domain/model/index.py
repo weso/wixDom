@@ -214,6 +214,6 @@ class Repository(object):
     """Abstract implementation of generic queries for managing Index."""
     __metaclass__ = ABCMeta
 
-    def insert_index(self, index, index_uri=None):
+    def insert_index(self, index, index_uri=None, provider_name=None, provider_url=None):
         pass
 
