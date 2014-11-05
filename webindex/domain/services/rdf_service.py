@@ -1,5 +1,5 @@
 from namespaces_handler import *
-from rdflib.namespace import RDF, RDFS
+from rdflib.namespace import RDF, RDFS, XSD
 from rdflib import Literal
 
 __author__ = 'miguel'
@@ -213,14 +213,12 @@ class RDFService(object):
         graph.add(indicator_term, RDFS.comment, Literal(indicator_dict['description'], lang='en'))
         graph.add(indicator_term, lb.term('indicatorType'), cex.term(indicator_dict['type'])) # Check this.
                                                                                               # Is it lb for sure?
-        # graph.add((base_ind.term(ind.id), lb.term("measurement"),
-        #            Literal(ind.measurement_unit.name)))
-        # graph.add((base_ind.term(ind.id), lb.term("last_update"),
-        #            Literal(self.time.strftime("%Y-%m-%d"), datatype=XSD.date)))
-        # graph.add((base_ind.term(ind.id), lb.term("starred"),
-        #            Literal(ind.starred, datatype=XSD.Boolean)))
-        # graph.add((base_ind.term(ind.id), lb.term("topic"),
-        #            base_topic.term(ind.topic_id)))
+        graph.add(indicator_term, example.term('parent'), Literal(indicator_dict['parent'])) # Check example.org
+        graph.add(indicator_term, example.term('index'), Literal(indicator_dict['index']))
+        graph.add(indicator_term, example.term('subindex'), Literal(indicator_dict['subindex']))
+        graph.add(indicator_term, example.term('component'), Literal(indicator_dict['component']))
+        graph.add(indicator_term, example.term('weight'), Literal(indicator_dict['weight']))
+
         return graph
 
     def _find_country_dict(self, iso3_code):
