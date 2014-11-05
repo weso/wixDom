@@ -14,7 +14,7 @@ class IndexRepository(Repository):
         self._db = connect_to_db(host=host, port=port, db_name=db_name)
         self._url_root = url_root
 
-    def insert_index(self, index, index_uri=None):
+    def insert_index(self, index, index_uri=None, provider_name=None, provider_url=None):
         index_dict = {}
         index_dict['_id'] = index.id
         index_dict["index"] = None
@@ -28,5 +28,7 @@ class IndexRepository(Repository):
         index_dict['uri'] = index_uri
         index_dict['weight'] = 1
         index_dict['republish'] = True
+        index_dict['provider_name'] = provider_name
+        index_dict['provider_url'] = provider_url
 
         self._db['indicators'].insert(index_dict)

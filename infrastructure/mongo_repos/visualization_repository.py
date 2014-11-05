@@ -50,13 +50,16 @@ class VisualizationRepository(object):
         # or config, or constants, or params or what...
         return 2007, 2013
 
-    def insert_visualization(self, observations, area_iso3_code, area_name, indicator_code, indicator_name):
+    def insert_visualization(self, observations, area_iso3_code, area_name, indicator_code, indicator_name,
+                             provider_name, provider_url):
         visualization_dict = {}
         visualization_dict['area'] = area_iso3_code
         visualization_dict['area_name'] = area_name
         visualization_dict['indicator'] = normalize_group_name(indicator_code)
         visualization_dict['indicator_name'] = indicator_name
         visualization_dict['values'] = self._build_values_object(observations)
+        visualization_dict['provider_name'] = provider_name
+        visualization_dict['provider_url'] = provider_url
 
         self._db['visualizations'].insert(visualization_dict)
 

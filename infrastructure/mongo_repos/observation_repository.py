@@ -415,7 +415,9 @@ class ObservationRepository(Repository):
         observation["indicator_name"] = indicator["name"]
         observation["area_name"] = area["name"]
 
-    def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None, year_literal=None, area_name=None, indicator_name=None, previous_value=None,year_of_previous_value=None, republish=None):
+    def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
+                           year_literal=None, area_name=None, indicator_name=None, previous_value=None,
+                           year_of_previous_value=None, republish=None, provider_name=None, provider_url=None):
         """
         It takes the info of indicator and area through the optional params area_iso3_code,
         indicator_code and year_literal
@@ -455,6 +457,8 @@ class ObservationRepository(Repository):
         observation_dict['ranked'] = ranked_value
         observation_dict['continent'] = self._look_for_continent_iso3(area_iso3_code)
         observation_dict['short_name'] = self._look_for_short_name(area_iso3_code)
+        observation_dict['provider_name'] = provider_name
+        observation_dict['provider_url'] = provider_url
 
 
 
