@@ -68,6 +68,7 @@ class AreaRepository(region.Repository):
         continents = []
 
         for continent in areas:
+            continent["short_name"] = continent["name"]
             self.set_continent_countries(continent)
 
             self.area_uri(continent)
