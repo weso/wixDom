@@ -289,7 +289,7 @@ class ObservationRepository(Repository):
         observation_list = []
 
         for observation in observations:
-            self.observation_uri(observation)
+            # self.observation_uri(observation)
             self.set_observation_country_and_indicator_name(observation)
             observation_list.append(observation)
             # Extra info
@@ -394,16 +394,16 @@ class ObservationRepository(Repository):
 
     def get_year_array(self):
         years = self._db['observations'].distinct("year")
-        years.sort(reverse = True)
+        years.sort(reverse=True)
 
         return success(years)
 
-    def observation_uri(self, observation):
-        indicator_code = observation["indicator"]
-        area_code = observation["area"]
-        year = observation["year"]
-        observation["uri"] = "%sobservations/%s/%s/%s" % (self._url_root,
-                                                          indicator_code, area_code, year)
+    # def observation_uri(self, observation):
+    #     indicator_code = observation["indicator"]
+    #     area_code = observation["area"]
+    #     year = observation["year"]
+    #     observation["uri"] = "%sobservations/%s/%s/%s" % (self._url_root,
+    #                                                       indicator_code, area_code, year)
 
     def set_observation_country_and_indicator_name(self, observation):
         indicator_code = observation["indicator"]
@@ -417,7 +417,8 @@ class ObservationRepository(Repository):
 
     def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
                            year_literal=None, area_name=None, indicator_name=None, previous_value=None,
-                           year_of_previous_value=None, republish=None, provider_name=None, provider_url=None):
+                           year_of_previous_value=None, republish=True, provider_name="WF (Web Foundation)",
+                           provider_url="http://webfoundation.org/"):  # Refactor please...
         """
         It takes the info of indicator and area through the optional params area_iso3_code,
         indicator_code and year_literal
@@ -429,11 +430,14 @@ class ObservationRepository(Repository):
         """
         norm_value = self._look_for_computation("normalized", observation)
         scored_value = self._look_for_computation("scored", observation)
-        propper_values_content = observation.value
+        propper_values_content = round(observation.value, 2)
         if scored_value is not None:
-            propper_values_content = scored_value
-        elif norm_value is not None:
-            propper_values_content = norm_value
+            propper_values_content = round(scored_value, 2)
+        elif republish is not None and not republish:
+            propper_values_content = None
+
+        # elif norm_value is not None:
+        #     propper_values_content = norm_value
 
         observation_dict = {}
         observation_dict['_id'] = observation.id
@@ -444,11 +448,11 @@ class ObservationRepository(Repository):
         observation_dict['indicator_name'] = indicator_name
         observation_dict['value'] = observation.value
         observation_dict['year'] = str(observation.ref_year.value)
-        observation_dict['values'] = [round(propper_values_content, 2)]
+        observation_dict['values'] = [propper_values_content]
         observation_dict['uri'] = observation_uri
-        observation_dict['previous_value'] = self._build_previous_value_object(previous_value,
-                                                                               year_of_previous_value,
-                                                                               propper_values_content)
+        # observation_dict['previous_value'] = self._build_previous_value_object(previous_value,
+        #                                                                        year_of_previous_value,
+        #                                                                        propper_values_content)
         observation_dict['republish'] = republish
         observation_dict['scored'] = scored_value
         ranked_value = self._look_for_computation("ranked", observation)
@@ -490,36 +494,40 @@ class ObservationRepository(Repository):
             if computation_type is None:
                 computation_type = "normalized"
             observation[computation_type] = normalized_value
+            if (not observation['republish'] and computation_type == "normalized") or computation_type == 'scored':
+                observation['values'] = [round(normalized_value, 2)]
             self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
 
 
-    @staticmethod
-    def _build_previous_value_object(value_previous_year, year, value_current_year):
-        if value_previous_year is None or year is None:
-            return None
-        else:
-            tendency = -1  # Case the values are equal
-            if value_current_year < value_previous_year:  # Case current is lower
-                tendency = -1
-            elif value_current_year > value_previous_year:  # Case current is higher
-                tendency = 1
-            return {'value': value_previous_year, 'year': str(year), 'tendency': tendency}
+    # @staticmethod
+    # def _build_previous_value_object(value_previous_year, year, value_current_year):
+    #     if value_previous_year is None or year is None:
+    #         return None
+    #     else:
+    #         # tendency = -1  # Case the values are equal
+    #         # if value_current_year < value_previous_year:  # Case current is lower
+    #         #     tendency = -1
+    #         # elif value_current_year > value_previous_year:  # Case current is higher
+    #         #     tendency = 1
+    #         return {'value': value_previous_year, 'year': str(year)}
+    #         # return {'value': value_previous_year, 'year': str(year), 'tendency': tendency}
 
 
-    def update_previous_value_object(self, indicator_code, area_code, current_year,
-                                     previous_year, previous_value, tendency):
-        observation = self.find_observations(indicator_code=normalize_group_name(indicator_code),
-                                             area_code=area_code,
-                                             year=current_year)
-        if observation["success"] and len(observation["data"]) > 0:
-            observation = observation["data"][0]
-            observation['previous_value'] = {'value': previous_value, 'year': str(previous_year), 'tendency': tendency}
-            self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
-        else:
-            raise ValueError("Unable to actualize previous value of "
-                             "observation: Obs not found. {},{},{}".format(indicator_code,
-                                                                           area_code,
-                                                                           current_year))
+    # def update_previous_value_object(self, indicator_code, area_code, current_year,
+    #                                  previous_year, previous_value):
+    #     observation = self.find_observations(indicator_code=normalize_group_name(indicator_code),
+    #                                          area_code=area_code,
+    #                                          year=current_year)
+    #     if observation["success"] and len(observation["data"]) > 0:
+    #         observation = observation["data"][0]
+    #         # observation['previous_value'] = {'value': previous_value, 'year': str(previous_year),'tendency': tendency}
+    #         observation['previous_value'] = {'value': previous_value, 'year': str(previous_year)}
+    #         self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
+    #     else:
+    #         raise ValueError("Unable to actualize previous value of "
+    #                          "observation: Obs not found. {},{},{}".format(indicator_code,
+    #                                                                        area_code,
+    #                                                                        current_year))
 
 
     @staticmethod

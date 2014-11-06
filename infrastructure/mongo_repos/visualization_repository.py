@@ -64,7 +64,7 @@ class VisualizationRepository(object):
         self._db['visualizations'].insert(visualization_dict)
 
     def insert_built_visualization(self, array_values, area_iso3_code, area_name, indicator_code, indicator_name,
-                                   provider_name, provider_url):
+                                   provider_name, provider_url, short_name, continent):
         """
         Handy for inserting in mongo a visualization document by directly receiving the array "values" built.
 
@@ -84,6 +84,8 @@ class VisualizationRepository(object):
         visualization_dict['values'] = array_values
         visualization_dict['provider_name'] = provider_name
         visualization_dict['provider_url'] = provider_url
+        visualization_dict['short_name'] = short_name
+        visualization_dict['continent'] = continent
         self._db['visualizations'].insert(visualization_dict)
 
 
