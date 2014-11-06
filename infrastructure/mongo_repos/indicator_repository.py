@@ -22,7 +22,7 @@ class IndicatorRepository(Repository):
 
         children = self.find_indicator_children(indicator_code)
         indicator["children"] = children
-        self.indicator_uri(indicator)
+        # self.indicator_uri(indicator)
 
         return success(indicator)
 
@@ -74,7 +74,7 @@ class IndicatorRepository(Repository):
             code = indicator["indicator"]
             children = self.find_indicator_children(code)
             indicator["children"] = children
-            self.indicator_uri(indicator)
+            # self.indicator_uri(indicator)
             processed_indicators.append(indicator)
 
         return success(processed_indicators)
@@ -95,9 +95,9 @@ class IndicatorRepository(Repository):
     def indicator_error(self, indicator_code):
         return error("Invalid Indicator Code: %s" % indicator_code)
 
-    def indicator_uri(self, indicator_code):
-        uri(url_root=self._url_root, element=indicator_code,
-            element_code="indicator", level="indicators")
+    # def indicator_uri(self, indicator_code):
+    #     uri(url_root=self._url_root, element=indicator_code,
+    #         element_code="indicator", level="indicators")
 
     def insert_indicator(self, indicator, indicator_uri=None, component_name=None, subindex_name=None, index_name=None,
                          weight=None, provider_name=None, provider_url=None):
