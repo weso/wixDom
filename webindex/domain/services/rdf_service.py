@@ -71,6 +71,10 @@ class RDFService(object):
                       cex.term("ref-area"),
                       base_area.term(observation['area'])))
 
+            graph.add((observation_term,
+                       schema.term("Continent"),
+                       Literal(observation['continent'])))
+
     @staticmethod
     def _build_observation_id(observation_dict):
         return "OBS_{}_{}_{}".format(observation_dict["indicator"],
