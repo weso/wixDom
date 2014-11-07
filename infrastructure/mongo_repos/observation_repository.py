@@ -418,7 +418,7 @@ class ObservationRepository(Repository):
     def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
                            year_literal=None, area_name=None, indicator_name=None, previous_value=None,
                            year_of_previous_value=None, republish=True, provider_name="WF (Web Foundation)",
-                           provider_url="http://webfoundation.org/"):  # Refactor please...
+                           provider_url="http://webfoundation.org/", tendency=1):  # Refactor please...
         """
         It takes the info of indicator and area through the optional params area_iso3_code,
         indicator_code and year_literal
@@ -433,8 +433,6 @@ class ObservationRepository(Repository):
         propper_values_content = round(observation.value, 2)
         if scored_value is not None:
             propper_values_content = round(scored_value, 2)
-        elif republish is not None and not republish:
-            propper_values_content = None
 
         # elif norm_value is not None:
         #     propper_values_content = norm_value
@@ -463,6 +461,7 @@ class ObservationRepository(Repository):
         observation_dict['short_name'] = self._look_for_short_name(area_iso3_code)
         observation_dict['provider_name'] = provider_name
         observation_dict['provider_url'] = provider_url
+        observation_dict['tendency'] = tendency
 
 
 
@@ -494,7 +493,7 @@ class ObservationRepository(Repository):
             if computation_type is None:
                 computation_type = "normalized"
             observation[computation_type] = normalized_value
-            if (not observation['republish'] and computation_type == "normalized") or computation_type == 'scored':
+            if computation_type == 'scored':
                 observation['values'] = [round(normalized_value, 2)]
             self._db['observations'].update({'_id': observation["_id"]}, {"$set": observation}, upsert=False)
 

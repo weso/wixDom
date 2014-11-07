@@ -317,7 +317,8 @@ class Repository(object):
 
     def insert_observation(self, observation, observation_uri=None, area_iso3_code=None, indicator_code=None,
                            year_literal=None, area_name=None, indicator_name=None, previous_value=None,
-                           year_of_previous_value=None, republish=None, provider_name=None, provider_url=None):
+                           year_of_previous_value=None, republish=None, provider_name=None, provider_url=None,
+                           tendency=None):
         """
         The info related to area, indicator and year could be provided using the observation
         object internal fields or, in some context, directly using the parameters
