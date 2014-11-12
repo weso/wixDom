@@ -90,6 +90,7 @@ class ObservationRepository(Repository):
 
             observations["data"] = {
                 "observations": observations["data"],
+                "observationsByCountry": self.set_observations_by_country(observations["data"]),
                 "bars": barChart["data"],
                 "secondVisualisation": secondVisualisation,
                 "mean": mean,
@@ -103,6 +104,15 @@ class ObservationRepository(Repository):
             }
 
         return observations
+
+    def set_observations_by_country(self, observations):
+        obj = {}
+
+        for observation in observations:
+            area = observation["area"]
+            obj[area] = observation
+
+        return obj
 
     def set_observation_rankings(self, observations, rankings):
         rankings = rankings["values"]
