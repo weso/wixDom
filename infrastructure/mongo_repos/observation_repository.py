@@ -37,6 +37,7 @@ class ObservationRepository(Repository):
 
         byCountry = aux_data["byCountry"]
         secondVisualisation = aux_data["visualisations"]
+        countries = aux_data["countries"]
         years = self.get_year_array()
 
         years = years["data"] if years["success"] else []
@@ -97,7 +98,8 @@ class ObservationRepository(Repository):
                 "lower": lower,
                 "byCountry": byCountry,
                 "years": reversed(years),
-                "continents": continents
+                "continents": continents,
+                "countries": countries
             }
 
         return observations
@@ -216,6 +218,7 @@ class ObservationRepository(Repository):
             # Get selected countries from previous query
             selectedCountries = []
             selectedCountriesString = ""
+            countries = {}
 
             for observation in data1:
                 country = observation["area"]
@@ -225,6 +228,9 @@ class ObservationRepository(Repository):
                     selectedCountriesString += ","
 
                 selectedCountriesString += country
+
+                country_object = self._area.find_countries_by_code_or_income(country)
+                countries[country] = country_object["data"]
 
             byCountry = self._visualization.get_visualizations_in_object(indicator_code, selectedCountries)
 
@@ -244,12 +250,14 @@ class ObservationRepository(Repository):
 
             return {
                 "byCountry": byCountry,
-                "visualisations": visualisations
+                "visualisations": visualisations,
+                "countries": countries
             }
 
         return {
             "byCountry": {},
-            "visualisations": []
+            "visualisations": [],
+            "countries": []
         }
 
     def find_observations(self, indicator_code=None, area_code=None, year=None):
