@@ -38,6 +38,7 @@ class ObservationRepository(Repository):
         byCountry = aux_data["byCountry"]
         secondVisualisation = aux_data["visualisations"]
         countries = aux_data["countries"]
+        selectedRegion = aux_data["region"]
         years = self.get_year_array()
 
         years = years["data"] if years["success"] else []
@@ -80,7 +81,8 @@ class ObservationRepository(Repository):
                 "byCountry": byCountry,
                 "years": reversed(years),
                 "continents": continents,
-                "countries": countries
+                "countries": countries,
+                "region": selectedRegion
             }
 
         return observations
@@ -270,13 +272,15 @@ class ObservationRepository(Repository):
             return {
                 "byCountry": byCountry,
                 "visualisations": visualisations,
-                "countries": countries
+                "countries": countries,
+                "region": region
             }
 
         return {
             "byCountry": {},
             "visualisations": [],
-            "countries": []
+            "countries": [],
+            "region": "ALL"
         }
 
     def find_observations(self, indicator_code=None, area_code=None, year=None):
