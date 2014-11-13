@@ -42,26 +42,8 @@ class ObservationRepository(Repository):
 
         years = years["data"] if years["success"] else []
 
-        # mean and median
-        mean = 0
-        median = []
-
-        for observation in observations["data"]:
-            value = observation["values"][0]
-
-            mean += value
-            median.append(value)
-
-        length = len(observations["data"])
-        mean = 0 if length <= 0 else mean / length
-        median = self.getMedian(median)
-
-        mean = round(mean, 2)
-        median = round(median, 2)
-
-        # higher and lower
-        higher = observations["data"][0] if length > 0 else ""
-        lower = observations["data"][length - 1] if length > 0 else ""
+        statistics = self.get_statistic_values(observations)
+        globalStatistics = self.get_statistic_values(barChart)
 
         # continents
         continents = self._area.find_continents(None)
@@ -93,10 +75,8 @@ class ObservationRepository(Repository):
                 "observationsByCountry": self.set_observations_by_country(observations["data"]),
                 "bars": barChart["data"],
                 "secondVisualisation": secondVisualisation,
-                "mean": mean,
-                "median": median,
-                "higher": higher,
-                "lower": lower,
+                "statistics": statistics,
+                "globalStatistics": globalStatistics,
                 "byCountry": byCountry,
                 "years": reversed(years),
                 "continents": continents,
@@ -104,6 +84,35 @@ class ObservationRepository(Repository):
             }
 
         return observations
+
+    def get_statistic_values(self, observations):
+         # mean and median
+        mean = 0
+        median = []
+
+        for observation in observations["data"]:
+            value = observation["values"][0]
+
+            mean += value
+            median.append(value)
+
+        length = len(observations["data"])
+        mean = 0 if length <= 0 else mean * 1.0 / length
+        median = self.getMedian(median)
+
+        mean = round(mean, 2)
+        median = round(median, 2)
+
+        # higher and lower
+        higher = observations["data"][0] if length > 0 else ""
+        lower = observations["data"][length - 1] if length > 0 else ""
+
+        return {
+            "mean": mean,
+            "median": median,
+            "higher": higher,
+            "lower": lower
+        }
 
     def set_observations_by_country(self, observations):
         obj = {}
