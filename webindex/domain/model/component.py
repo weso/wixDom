@@ -32,6 +32,7 @@ class Component(Entity):
         self._label = event.label
         self._notation = event.notation
         self._indicator_ids = []
+        self._comment = event.comment
 
     def __repr__(self):
         return "{d}Component(id={c._id}, order={c._order}, " \
@@ -116,6 +117,19 @@ class Component(Entity):
         self.increment_version()
 
     @property
+    def comment(self):
+        self._check_not_discarded()
+        return self._comment
+
+    @comment.setter
+    def comment(self, value):
+        self._check_not_discarded()
+        if len(value) < 1:
+            raise ValueError("Component's comment cannot be empty")
+        self._comment = value
+        self.increment_version()
+
+    @property
     def notation(self):
         self._check_not_discarded()
         return self._notation
@@ -186,11 +200,11 @@ class Component(Entity):
 # Component aggregate factory
 # =======================================================================================
 def create_component(order=None, contributor=None, issued=None, label=None,
-                     notation=None):
+                     notation=None, comment=None):
     component_id = uuid.uuid4().hex[:24]
     event = Component.Created(originator_id=component_id, originator_version=0,
                               order=order, contributor=contributor, issued=issued,
-                              label=label, notation=notation)
+                              label=label, notation=notation, comment=comment)
     component = when(event)
     publish(event)
     return component

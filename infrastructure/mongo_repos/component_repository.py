@@ -23,7 +23,7 @@ class ComponentRepository(Repository):
         component_dict['component'] = None
         component_dict['indicator'] = normalize_group_name(component.label)
         component_dict['name'] = component.label
-        component_dict['description'] = None
+        component_dict['description'] = component.comment
         component_dict['type'] = component.type
         component_dict['parent'] = normalize_group_name(subindex_name)
         component_dict['uri'] = component_uri

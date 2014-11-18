@@ -23,7 +23,7 @@ class SubindexRepository(Repository):
         subindex_dict['subindex'] = None
         subindex_dict['indicator'] = normalize_group_name(subindex.label)
         subindex_dict['name'] = subindex.label
-        subindex_dict['description'] = None
+        subindex_dict['description'] = subindex.comment
         subindex_dict['type'] = subindex.type
         subindex_dict['parent'] = normalize_group_name(index_name)
         subindex_dict['uri'] = subindex_uri

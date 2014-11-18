@@ -29,6 +29,7 @@ class Index(Entity):
         self._colour = event.colour
         self._type = "Index"
         self._label = event.label
+        self._comment = event.comment
         self._notation = event.notation
         self._sub_index_ids = []
 
@@ -101,6 +102,19 @@ class Index(Entity):
         self.increment_version()
 
     @property
+    def comment(self):
+        self._check_not_discarded()
+        return self._comment
+
+    @comment.setter
+    def comment(self, value):
+        self._check_not_discarded()
+        if len(value) < 1:
+            raise ValueError("Index comment cannot be empty")
+        self._comment = value
+        self.increment_version()
+
+    @property
     def notation(self):
         self._check_not_discarded()
         return self._notation
@@ -170,10 +184,10 @@ class Index(Entity):
 # =======================================================================================
 # Index aggregate factory
 # =======================================================================================
-def create_index(order=None, colour=None, label=None, notation=None):
+def create_index(order=None, colour=None, label=None, notation=None, comment=None):
     index_id = uuid.uuid4().hex[:24]
     event = Index.Created(originator_id=index_id, originator_version=0,
-                          order=order, colour=colour, label=label, notation=notation)
+                          order=order, colour=colour, label=label, notation=notation, comment=comment)
     index = when(event)
     publish(event)
     return index

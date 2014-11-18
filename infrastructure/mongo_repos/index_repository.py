@@ -22,7 +22,7 @@ class IndexRepository(Repository):
         index_dict['component'] = None
         index_dict['indicator'] = normalize_group_name(index.label)
         index_dict['name'] = index.label
-        index_dict['description'] = None
+        index_dict['description'] = index.comment
         index_dict['type'] = index.type
         index_dict['parent'] = None
         index_dict['uri'] = index_uri

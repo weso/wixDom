@@ -31,6 +31,7 @@ class SubIndex(Entity):
         self._label = event.label
         self._notation = event.notation
         self._component_ids = []
+        self._comment = event.comment
 
     def __repr__(self):
         return "{d}SubIndex(id={c._id}, order={c._order}, " \
@@ -98,6 +99,19 @@ class SubIndex(Entity):
         if len(value) < 1:
             raise ValueError("SubIndex label cannot be empty")
         self._label = value
+        self.increment_version()
+
+    @property
+    def comment(self):
+        self._check_not_discarded()
+        return self._comment
+
+    @comment.setter
+    def comment(self, value):
+        self._check_not_discarded()
+        if len(value) < 1:
+            raise ValueError("SubIndex comment cannot be empty")
+        self._comment = value
         self.increment_version()
 
     @property
@@ -170,10 +184,11 @@ class SubIndex(Entity):
 # =======================================================================================
 # SubIndex aggregate factory
 # =======================================================================================
-def create_sub_index(order=None, colour=None, label=None, notation=None):
+def create_sub_index(order=None, colour=None, label=None, notation=None, comment=None):
     sub_index_id = uuid.uuid4().hex[:24]
     event = SubIndex.Created(originator_id=sub_index_id, originator_version=0,
-                             order=order, colour=colour, label=label, notation=notation)
+                             order=order, colour=colour, label=label, notation=notation,
+                             comment=comment)
     sub_index = when(event)
     publish(event)
     return sub_index
