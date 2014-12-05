@@ -40,6 +40,7 @@ class ObservationRepository(Repository):
         countries = aux_data["countries"]
         selectedRegion = aux_data["region"]
         years = self.get_year_array()
+        full_observations = self.find_observations(indicator_code, selectedRegion, year)
 
         years = years["data"] if years["success"] else []
 
@@ -70,6 +71,7 @@ class ObservationRepository(Repository):
 
             rankings = self._ranking.find_rankings(year)
             self.set_observation_rankings(observations["data"], rankings)
+            self.set_observation_rankings(full_observations["data"], rankings)
 
             observations["data"] = {
                 "observations": observations["data"],
@@ -82,7 +84,8 @@ class ObservationRepository(Repository):
                 "years": reversed(years),
                 "continents": continents,
                 "countries": countries,
-                "region": selectedRegion
+                "region": selectedRegion,
+                "fullObservations": full_observations["data"]
             }
 
         return observations
