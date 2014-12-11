@@ -172,8 +172,8 @@ class ObservationRepository(Repository):
             data1 = observations["data"]
             data2 = regionObservations["data"]
 
-            if len(data2) < max_bars - len(data1):
-                data2 = data2 + self.find_observations(indicator_code, "ALL", year)["data"]
+            #if len(data2) < max_bars - len(data1):
+            #    data2 = data2 + self.find_observations(indicator_code, "ALL", year)["data"]
 
             processedCountries = []
 
